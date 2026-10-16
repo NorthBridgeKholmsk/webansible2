@@ -1,0 +1,19 @@
+<header class="bg-white border-bottom px-3 py-2 d-flex align-items-center" style="height: 56px;">
+  <button id="sidebar-toggle" class="btn btn-outline-secondary btn-sm me-3">
+    <i class="bi bi-list"></i>
+  </button>
+  <h1 class="h6 mb-0 text-dark"><%= content_for(:page_title) || "WebAnsible" %></h1>
+  <div class="ms-auto d-flex align-items-center gap-2">
+    <button id="theme-toggle" class="btn btn-outline-secondary btn-sm" title="Переключить тему">
+      <i class="bi bi-moon-stars"></i>
+    </button>
+    <% if current_user %>
+      <span class="text-muted small me-2">
+        <i class="bi bi-person-circle"></i> <%= current_user.login %>
+      </span>
+      <%= link_to logout_path, class: "btn btn-outline-danger btn-sm", data: { turbo_method: :delete, turbo_confirm: "Выйти из системы?" } do %>
+        <i class="bi bi-box-arrow-right"></i> Выход
+      <% end %>
+    <% end %>
+  </div>
+</header>

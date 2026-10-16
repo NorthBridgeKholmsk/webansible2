@@ -1,0 +1,40 @@
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h1 class="h4 mb-0">Пейбуки</h1>
+  <%= link_to "Новый пейбук", new_playbook_path, class: "btn btn-primary" %>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <table class="table table-hover mb-0">
+    <thead>
+      <tr>
+        <th>Название</th>
+        <th>ОС</th>
+        <th>Активен</th>
+        <th class="text-end">Действия</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @playbooks.each do |pb| %>
+        <tr>
+          <td><%= link_to pb.name, playbook_path(pb), class: "text-decoration-none" %></td>
+          <td><span class="badge bg-secondary"><%= pb.os_type %></span></td>
+          <td><%= pb.enabled ? yes_icon : no_icon %></td>
+          <td class="text-end">
+            <%= link_to new_run_path(playbook_id: pb.id), class: "btn btn-sm btn-outline-success", title: "Запуск" do %>
+              <i class="bi bi-play"></i>
+            <% end %>
+            <%= link_to edit_playbook_path(pb), class: "btn btn-sm btn-outline-primary" do %>
+              <i class="bi bi-pencil"></i>
+            <% end %>
+            <%= link_to playbook_path(pb), class: "btn btn-sm btn-outline-danger", data: { turbo_method: :delete, turbo_confirm: "Удалить?" } do %>
+              <i class="bi bi-trash"></i>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+  <% if @playbooks.empty? %>
+    <div class="card-body text-center text-muted">Пейбуки отсутствуют</div>
+  <% end %>
+</div>

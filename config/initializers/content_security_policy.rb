@@ -1,6 +1,6 @@
-# Be sure to restart your server when you modify this file.
+# После изменения этого файла сервер нужно перезапустить.
 
-# Define an application-wide content security policy.
+# Политика безопасности содержимого (CSP) для всего приложения.
 # See the Securing Rails Applications Guide for more information:
 # https://guides.rubyonrails.org/security.html#content-security-policy-header
 
@@ -12,14 +12,14 @@
 #     policy.object_src  :none
 #     policy.script_src  :self, :https
 #     policy.style_src   :self, :https
-#     # Specify URI for violation reports
+#     # URI для отчётов о нарушениях:
 #     # policy.report_uri "/csp-violation-report-endpoint"
 #   end
 #
-#   # Generate session nonces for permitted importmap and inline scripts
+#   # Nonce из сессии для разрешённых importmap- и inline-скриптов:
 #   config.content_security_policy_nonce_generator = ->(request) { request.session.id.to_s }
 #   config.content_security_policy_nonce_directives = %w(script-src)
 #
-#   # Report violations without enforcing the policy.
+#   # Отчёты о нарушениях без принудительного применения политики.
 #   # config.content_security_policy_report_only = true
 # end

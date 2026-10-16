@@ -1,5 +1,5 @@
-# Load the Rails application.
+# Загружаем приложение Rails (объявление конфигурации).
 require_relative "application"
 
-# Initialize the Rails application.
+# Инициализируем приложение Rails.
 Rails.application.initialize!

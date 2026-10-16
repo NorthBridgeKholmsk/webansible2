@@ -1,0 +1,14 @@
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="<%= hosts_path %>">Хосты</a></li>
+    <li class="breadcrumb-item active"><%= @host.new_record? ? "Создание" : @host.name %></li>
+  </ol>
+</nav>
+
+<h1 class="h4 mb-4"><%= @host.new_record? ? "Новый хост" : "Редактирование: #{@host.name}" %></h1>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-body">
+    <%= render "form" %>
+  </div>
+</div>

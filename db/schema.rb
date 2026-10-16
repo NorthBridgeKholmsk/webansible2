@@ -10,7 +10,16 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_09_02_000002) do
+ActiveRecord::Schema[7.0].define(version: 2026_10_13_000001) do
+  create_table "common_variables", force: :cascade do |t|
+    t.string "name", null: false
+    t.text "value"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.boolean "encrypted", default: false, null: false
+    t.index ["name"], name: "index_common_variables_on_name", unique: true
+  end
+
   create_table "files", force: :cascade do |t|
     t.string "name", null: false
     t.string "path"
@@ -33,6 +42,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_09_02_000002) do
     t.integer "organization_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "source", default: "manual", null: false
     t.index ["ip"], name: "index_hosts_on_ip", unique: true
     t.index ["organization_id"], name: "index_hosts_on_organization_id"
   end
@@ -41,19 +51,39 @@ ActiveRecord::Schema[7.0].define(version: 2026_09_02_000002) do
     t.string "name", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "source", default: "manual", null: false
   end
 
   create_table "playbooks", force: :cascade do |t|
     t.string "name", null: false
     t.string "os_type", default: "ubuntu", null: false
-    t.string "playbook_type", default: "deploy", null: false
-    t.integer "organization_id"
     t.text "content"
     t.text "description"
     t.boolean "enabled", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["organization_id"], name: "index_playbooks_on_organization_id"
+  end
+
+  create_table "runs", force: :cascade do |t|
+    t.integer "playbook_id", null: false
+    t.integer "user_id"
+    t.string "status", default: "pending", null: false
+    t.integer "exit_code"
+    t.datetime "started_at"
+    t.datetime "finished_at"
+    t.text "hosts_snapshot"
+    t.text "variables"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["playbook_id"], name: "index_runs_on_playbook_id"
+  end
+
+  create_table "settings", force: :cascade do |t|
+    t.string "key", null: false
+    t.text "value"
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
+    t.index ["key"], name: "index_settings_on_key", unique: true
   end
 
   create_table "users", force: :cascade do |t|
@@ -73,6 +103,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_09_02_000002) do
     t.integer "variableable_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "encrypted", default: false, null: false
     t.index ["variableable_id", "variableable_type", "name"], name: "idx_variables_scope", unique: true
     t.index ["variableable_type", "variableable_id"], name: "index_variables_on_variableable"
   end
@@ -87,15 +118,6 @@ ActiveRecord::Schema[7.0].define(version: 2026_09_02_000002) do
     t.index ["category"], name: "index_zabbix_options_on_category"
   end
 
-  create_table "settings", force: :cascade do |t|
-    t.string "key", null: false
-    t.text "value"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["key"], name: "index_settings_on_key", unique: true
-  end
-
   add_foreign_key "files", "organizations"
   add_foreign_key "hosts", "organizations"
-  add_foreign_key "playbooks", "organizations"
 end

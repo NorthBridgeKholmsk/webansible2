@@ -1,0 +1,122 @@
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h1 class="h4 mb-0">Запуск плейбука</h1>
+</div>
+
+<% if @errors %>
+  <div class="alert alert-danger"><%= @errors %></div>
+<% end %>
+
+<%= form_with url: run_path, method: :post, local: true, id: "run-form" do %>
+  <!-- 1. Плейбук -->
+  <div class="mb-3">
+    <label class="form-label" for="run-playbook-select">Плейбук</label>
+    <%= select_tag "playbook_id", options_from_collection_for_select(@playbooks, :id, :name, @playbook&.id), prompt: "Выберите плейбук", class: "form-select", id: "run-playbook-select" %>
+  </div>
+
+  <!-- 2. Переменные (из блока vars: выбранного плейбука + дополнительные) -->
+  <div class="mb-3">
+    <label class="form-label">Переменные</label>
+    <% if @variables_error %>
+      <div class="alert alert-warning py-2"><%= @variables_error %></div>
+    <% end %>
+    <p class="text-muted small mb-2" id="run-variables-hint">Выберите плейбук — список переменных подгрузится из него.</p>
+    <div id="run-variables-container">
+      <% (@parsed_variables || []).each_with_index do |(name, value), i| %>
+        <div class="variable-row mb-2 row g-2">
+          <%= text_field_tag "variables[#{i}][name]", name, class: "form-control", placeholder: "Имя переменной" %>
+          <%= text_field_tag "variables[#{i}][value]", value, class: "form-control", placeholder: "Значение" %>
+        </div>
+      <% end %>
+    </div>
+    <button type="button" class="btn btn-sm btn-outline-secondary mt-2" id="add-variable">Добавить переменную</button>
+  </div>
+
+  <!-- 3. Фильтр хостов -->
+  <div class="mb-3">
+    <label class="form-label">Фильтр хостов</label>
+    <% host_types = @all_hosts.map(&:type).compact.uniq.sort %>
+    <% host_roles = @all_hosts.flat_map { |h| h.role_array }.uniq.sort %>
+    <% host_os_types = @all_hosts.map(&:os_type).compact.uniq.sort %>
+    <% host_orgs = @all_hosts.map { |h| h.organization&.name }.compact.uniq.sort %>
+    <div class="row g-2">
+      <div class="col-md-4">
+        <input type="text" class="form-control" id="run-filter-q" placeholder="Имя или IP (часть)">
+      </div>
+      <div class="col-md-2">
+        <%= select_tag "run-filter-org", options_for_select(host_orgs, ""), prompt: "Организация", class: "form-select" %>
+      </div>
+      <div class="col-md-2">
+        <%= select_tag "run-filter-type", options_for_select(host_types, ""), prompt: "Тип хоста", class: "form-select" %>
+      </div>
+      <div class="col-md-2">
+        <%= select_tag "run-filter-role", options_for_select(host_roles, ""), prompt: "Роль", class: "form-select" %>
+      </div>
+      <div class="col-md-2">
+        <%= select_tag "run-filter-os", options_for_select(host_os_types, ""), prompt: "ОС", class: "form-select" %>
+      </div>
+    </div>
+    <div class="d-flex gap-2 mt-2">
+      <button type="button" id="run-filter-apply" class="btn btn-primary btn-sm">Применить</button>
+      <button type="button" id="run-filter-reset" class="btn btn-outline-secondary btn-sm">Сбросить</button>
+    </div>
+  </div>
+
+  <!-- 4. Список хостов с чекбоксами -->
+  <div class="mb-3">
+    <label class="form-label d-flex align-items-center justify-content-between mb-2">
+      <span>Хосты</span>
+      <span id="run-selected-count" class="text-muted small fw-normal"></span>
+    </label>
+    <% if @all_hosts.empty? %>
+      <div class="alert alert-secondary py-2">Хосты не найдены.</div>
+    <% else %>
+      <div class="d-flex align-items-center mb-1">
+        <input type="checkbox" id="run-select-all" class="form-check-input me-2">
+        <label for="run-select-all" class="form-check-label small text-muted mb-0">Выбрать все видимые</label>
+      </div>
+      <div id="run-hosts-list" class="border rounded" style="max-height: 340px; overflow-y: auto;">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th style="width:1%"></th>
+              <th>Название</th>
+              <th>IP</th>
+              <th>Тип</th>
+              <th>Роль</th>
+              <th>ОС</th>
+              <th>Организация</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @all_hosts.each do |host| %>
+              <tr class="host-run-row"
+                  data-name="<%= host.name %>"
+                  data-ip="<%= host.ip %>"
+                  data-type="<%= host.type %>"
+                  data-role="<%= host.role_array.join(',') %>"
+                  data-os="<%= host.os_type %>"
+                  data-org="<%= host.organization&.name %>">
+                <td>
+                  <%= check_box_tag "host_ids[]", host.id, false, id: "run-host-#{host.id}", class: "form-check-input" %>
+                </td>
+                <td><label for="run-host-<%= host.id %>" class="mb-0"><%= host.name %></label></td>
+                <td><code><%= host.ip %></code></td>
+                <td><%= host.type %></td>
+                <td class="text-muted"><%= host.role_array.join(", ") %></td>
+                <td><%= host.os_type %></td>
+                <td class="text-muted"><%= host.organization&.name %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      <p class="text-muted small mb-0" id="run-hosts-empty" style="display: none;">По заданным условиям хосты не найдены.</p>
+    <% end %>
+  </div>
+
+  <!-- 5. Кнопки -->
+  <div class="d-flex gap-2">
+    <%= submit_tag "Запуск", class: "btn btn-success" %>
+    <%= link_to "Отмена", root_path, class: "btn btn-secondary" %>
+  </div>
+<% end %>

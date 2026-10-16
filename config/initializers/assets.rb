@@ -1,12 +1,11 @@
-# Be sure to restart your server when you modify this file.
+# После изменения этого файла сервер нужно перезапустить.
 
-# Version of your assets, change this if you want to expire all your assets.
+# Версия ассетов — для инвалидации кэша (смените, чтобы «просрочить» все).
 Rails.application.config.assets.version = "1.0"
 
-# Add additional assets to the asset load path.
+# Дополнительные пути загрузки ассетов.
 # Rails.application.config.assets.paths << Emoji.images_path
 
-# Precompile additional assets.
-# application.js, application.css, and all non-JS/CSS in the app/assets
-# folder are already added.
+# Дополнительная предкомпиляция ассетов: application.js, application.css и
+# всё не-JS/CSS из app/assets уже добавлены по умолчанию.
 # Rails.application.config.assets.precompile += %w( admin.js admin.css )

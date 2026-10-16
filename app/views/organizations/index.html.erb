@@ -1,0 +1,59 @@
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h1 class="h4 mb-0">Организации</h1>
+  <%= link_to "Новая организация", new_organization_path, class: "btn btn-primary" %>
+</div>
+
+<%= form_with url: organizations_path, method: :get, local: true do %>
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body row g-3 align-items-end">
+      <div class="col-md-4">
+        <%= label_tag :q, "Название", class: "form-label" %>
+        <%= text_field_tag :q, params[:q], placeholder: "Частичное совпадение", class: "form-control" %>
+      </div>
+      <div class="col-md-4 d-flex gap-2">
+        <%= submit_tag "Найти", class: "btn btn-primary" %>
+        <%= link_to "Сбросить", organizations_path, class: "btn btn-outline-secondary" %>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<div class="card border-0 shadow-sm">
+  <table class="table table-hover mb-0">
+    <thead>
+      <tr>
+        <th>Название</th>
+        <th>Хосты</th>
+        <th>Переменные</th>
+        <th>Источник</th>
+        <th>Создан</th>
+        <th class="text-end">Действия</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @organizations.each do |org| %>
+        <tr>
+          <td><%= link_to org.name, organization_path(org), class: "text-decoration-none" %></td>
+          <td><%= org.hosts.size %></td>
+          <td><%= org.variables.size %></td>
+          <td><span class="badge <%= org.source == Organization::SOURCE_ZABBIX ? "bg-info text-dark" : "bg-secondary" %>"><%= org.source_label %></span></td>
+          <td class="text-muted small"><%= org.created_at.strftime("%d.%m.%Y") %></td>
+          <td class="text-end">
+            <%= link_to organization_path(org), class: "btn btn-sm btn-outline-secondary" do %>
+              <i class="bi bi-eye"></i>
+            <% end %>
+            <%= link_to edit_organization_path(org), class: "btn btn-sm btn-outline-primary", title: "Редактирование" do %>
+              <i class="bi bi-pencil"></i>
+            <% end %>
+            <%= link_to organization_path(org), class: "btn btn-sm btn-outline-danger", data: { turbo_method: :delete, turbo_confirm: "Удалить?" } do %>
+              <i class="bi bi-trash"></i>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+  <% if @organizations.empty? %>
+    <div class="card-body text-center text-muted">Организации отсутствуют</div>
+  <% end %>
+</div>

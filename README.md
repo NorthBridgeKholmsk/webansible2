@@ -1,24 +1,49 @@
-# README
+# WebAnsible 2 — v0.1
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Веб-интерфейс для запуска Ansible-плейбуков из браузера: управление
+организациями и хостами, переменными (в том числе зашифрованными),
+плейбуками; запуск задач с живым выводом.
 
-Things you may want to cover:
+## Возможности
 
-* Ruby version
+- Организации и хосты — вручную или синхронизацией из Zabbix;
+- Общие переменные + переменные организаций; чувствительные значения
+  хранятся в зашифрованном виде (AES-256-GCM);
+- Плейбуки и файлы хранятся в базе данных — раскладывать их по диску не нужно;
+- Запуски с живым выводом, статусами и логами;
+- Интеграция Zabbix: синхронизация хостов с прогрессом прямо в UI;
+- Роли `admin` / `editor`, темы light/dark.
 
-* System dependencies
+Стек: Ruby 3.0 · Rails 7.0 · Puma · SQLite3 · importmap + Turbo/Stimulus.
 
-* Configuration
+## Быстрый старт
 
-* Database creation
+Полная инструкция — [docs/INSTALL.md](docs/INSTALL.md) (systemd, Ansible,
+become-плагин для sudo-rs).
 
-* Database initialization
+```bash
+git clone https://github.com/NorthBridgeKholmsk/webansible2.git /opt/webansible2
+cd /opt/webansible2
+bundle install
+bin/rails db:prepare   # создаёт БД и применяет миграции (SQLite)
+bin/rails db:seed      # создаёт пользователя admin/admin — сразу смените пароль!
+# systemd-юнит и запуск — см. docs/INSTALL.md, раздел 3
+```
 
-* How to run the test suite
+## Структура проекта
 
-* Services (job queues, cache servers, search engines, etc.)
+- `app/models` — User, Organization, Host, Variable, Playbook, FileEntry,
+  Run, Setting, ZabbixOption;
+- `app/controllers`, `app/views` — UI (ERB + Turbo);
+- `app/services` — запуск задач (`RunLauncher`), сборка переменных
+  (`RunVariables`), шифрование значений (`VariableCipher`), клиент и
+  синхронизатор Zabbix;
+- `lib/settings/app_config.rb` — настройки приложения (credentials/ENV);
+- `extras/ansible/plugins/become/sudo.py` — become-плагин, совместимый с
+  sudo-rs (Ubuntu 26.04+).
 
-* Deployment instructions
+## Тесты
 
-* ...
+```bash
+cd /opt/webansible2 && bin/rails test < /dev/null   # ~125 тестов, ~30 c
+```

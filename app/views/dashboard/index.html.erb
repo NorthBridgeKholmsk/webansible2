@@ -1,0 +1,257 @@
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h1 class="h4 mb-0">Главная</h1>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-2">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body text-center">
+        <div class="display-6 text-primary"><%= @organization_count %></div>
+        <div class="text-muted small">Организаций</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body text-center">
+        <div class="display-6 text-primary"><%= @host_count %></div>
+        <div class="text-muted small">Хостов</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body text-center">
+        <div class="display-6 text-primary"><%= @playbook_count %></div>
+        <div class="text-muted small">Плейбуков</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body text-center">
+        <div class="display-6 text-primary"><%= @file_count %></div>
+        <div class="text-muted small">Файлов</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body text-center">
+        <div class="display-6 text-primary"><%= @variables_count %></div>
+        <div class="text-muted small">Переменных</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body text-center">
+        <div class="display-6 text-primary"><%= User.count %></div>
+        <div class="text-muted small">Пользователей</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-body">
+    <h5 class="card-title">Быстрые действия</h5>
+    <div class="d-flex gap-2 flex-wrap">
+      <%= link_to "Организация", new_organization_path, class: "btn btn-primary" %>
+      <%= link_to "Хост", new_host_path, class: "btn btn-outline-primary" %>
+      <%= link_to "Файл", new_file_path, class: "btn btn-outline-primary" %>
+      <%= link_to "Плейбук", new_playbook_path, class: "btn btn-outline-primary" %>
+      <%= link_to "Запуск", run_path, class: "btn btn-success" %>
+      <%= button_tag type: "button", id: "zabbix-sync-btn", class: "btn btn-outline-success", data: { turbo: "false" } do %>
+        <i class="bi bi-arrow-repeat"></i> Синхронизация с Zabbix
+      <% end %>
+    </div>
+  </div>
+  <div class="modal fade" id="zabbixSyncModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Синхронизация с Zabbix</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <div class="progress" style="height:24px;">
+              <div id="zabbixBar" class="progress-bar bg-primary" role="progressbar" style="width:0%"></div>
+            </div>
+            <p class="mt-2 mb-0 small text-muted" id="zabbixStatus">Ожидание…</p>
+          </div>
+          <ul id="zabbixResults" class="small mb-0 list-unstyled"></ul>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-danger" id="zabbixSyncCancel" hidden>Отменить</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="zabbixModalDone" hidden>Закрыть</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function () {
+    function init() {
+      var btn = document.getElementById('zabbix-sync-btn');
+      if (!btn || typeof bootstrap === 'undefined') return; // Bootstrap ещё не загружен
+      if (btn.__zabbixSyncBound) return;                    // защита от двойной привязки
+      btn.__zabbixSyncBound = true;
+    var modalEl = document.getElementById('zabbixSyncModal');
+    var modal = new bootstrap.Modal(modalEl);
+    var bar = document.getElementById('zabbixBar');
+    var status = document.getElementById('zabbixStatus');
+    var results = document.getElementById('zabbixResults');
+    var doneBtn = document.getElementById('zabbixModalDone');
+    var cancelBtn = document.getElementById('zabbixSyncCancel');
+    // syncRunning — «синхронизация идёт»: повторный клик по кнопке только открывает
+    // модалку (живой прогресс), новый fetch не стартует. Сбрасывается на done/ошибке.
+    var syncRunning = false;
+    var abortController = null;   // client-side fallback, если сервер не принял отмену
+    var lastProgress = { processed: 0, total: 0 };
+
+    function setProgress(done, total) {
+      lastProgress.processed = done || 0;
+      lastProgress.total = total || 0;
+      var pct = total > 0 ? Math.round((done / total) * 100) : 0;
+      bar.style.width = pct + '%';
+      bar.textContent = total > 0 ? (done + ' / ' + total + ' (' + pct + '%)') : '';
+      status.textContent = total > 0 ? ('Обработано ' + done + ' из ' + total) : 'Начинаю синхронизацию…';
+    }
+
+    // Сброс состояния «синхронизация идёт»: скрываем «Отменить», готовим к новому старту.
+    function stopSync() {
+      syncRunning = false;
+      abortController = null;
+      cancelBtn.hidden = true;
+      cancelBtn.disabled = false;
+    }
+
+    // Частичная сводка при client-side прерывании (сервер не принял отмену).
+    function finishPartial() {
+      stopSync();
+      status.textContent = 'Синхронизация прервана';
+      var info = document.createElement('li');
+      info.className = 'text-muted';
+      info.textContent = 'Обработано до отмены: ' + lastProgress.processed + ' из ' + lastProgress.total;
+      results.appendChild(info);
+      doneBtn.hidden = false;
+    }
+
+    function finishSummary(msg) {
+      stopSync();
+      bar.style.width = '100%';
+      // При отмене — «Синхронизация отменена»; сервер может прислать и своё сообщение
+      // (например, «Синхронизация уже выполняется»).
+      status.textContent = msg.cancelled ? 'Синхронизация отменена' : (msg.message || 'Готово');
+      var info = document.createElement('li');
+      info.className = 'text-muted';
+      var parts = ['Обработано: ' + (msg.total || 0), 'Создано: ' + (msg.created || 0), 'Обновлено: ' + (msg.updated || 0), 'Пропущено: ' + (msg.skipped || 0)];
+      if (msg.deleted_hosts > 0) parts.push('Удалено хостов: ' + msg.deleted_hosts);
+      if (msg.deleted_orgs > 0) parts.push('Удалено организаций: ' + msg.deleted_orgs);
+      info.textContent = parts.join(' | ');
+      results.appendChild(info);
+      (msg.errors || []).forEach(function (e) {
+        var li = document.createElement('li');
+        li.className = 'text-danger';
+        li.textContent = (e.name ? e.name + ': ' : '') + e.message;
+        results.appendChild(li);
+      });
+      doneBtn.hidden = false;
+    }
+
+    function handleMessage(line) {
+      if (!line) return;
+      var msg;
+      try { msg = JSON.parse(line); } catch (e) { return; }
+      if (msg.done) { finishSummary(msg); return; }
+      if (msg.type === 'status') { status.textContent = msg.message || ''; return; }
+      setProgress(msg.processed || 0, msg.total || 0);
+    }
+
+    btn.addEventListener('click', function () {
+      modal.show(); // модалка открывается всегда
+      if (syncRunning) return; // синхронизация идёт — только живой прогресс, новый fetch не стартует
+      bar.style.width = '0%';
+      results.innerHTML = '';
+      doneBtn.hidden = true;
+      cancelBtn.hidden = false;
+      setProgress(0, 0);
+      var meta = document.querySelector('meta[name=csrf-token]');
+      if (!meta) {
+        status.textContent = 'Ошибка: CSRF-токен не найден на странице (обновите страницу)';
+        doneBtn.hidden = false;
+        return;
+      }
+      syncRunning = true;
+      abortController = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+      fetch('<%= zabbix_sync_path %>', {
+        method: 'POST',
+        headers: { 'X-CSRF-Token': meta.getAttribute('content'), 'Accept': 'text/plain' },
+        signal: abortController ? abortController.signal : undefined
+      }).then(function (resp) {
+        if (!resp.ok) {
+          status.textContent = 'Ошибка сервера: HTTP ' + resp.status;
+          doneBtn.hidden = false;
+          return Promise.resolve();
+        }
+        var reader = resp.body.getReader();
+        var decoder = new TextDecoder();
+        var buffer = '';
+        function pump() {
+          return reader.read().then(function (chunk) {
+            if (chunk.done) return;
+            buffer += decoder.decode(chunk.value, { stream: true });
+            var nl;
+            while ((nl = buffer.indexOf('\n')) !== -1) {
+              handleMessage(buffer.slice(0, nl).trim());
+              buffer = buffer.slice(nl + 1);
+            }
+            return pump();
+          });
+        }
+        return pump();
+      }).catch(function (e) {
+        if (e && e.name === 'AbortError') {
+          // Client-side прерывание (fallback отмены): показываем частичную сводку.
+          finishPartial();
+          return;
+        }
+        stopSync();
+        status.textContent = 'Ошибка соединения: ' + e.message;
+        doneBtn.hidden = false;
+      });
+    });
+
+    // «Отменить»: просим сервер остановить синхронизацию (серверный флаг — клиентский
+    // abort недостаточен: ignore_disconnect=true, сервер продолжил бы работу).
+    // Итог придёт по стриму обычной done-строкой с cancelled:true.
+    cancelBtn.addEventListener('click', function () {
+      if (!syncRunning) return;
+      status.textContent = 'Отменяю…';
+      cancelBtn.disabled = true;
+      var meta = document.querySelector('meta[name=csrf-token]');
+      fetch('<%= zabbix_sync_cancel_path %>', {
+        method: 'POST',
+        headers: { 'X-CSRF-Token': meta ? meta.getAttribute('content') : '', 'Accept': 'application/json' }
+      }).then(function (resp) {
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      }).catch(function () {
+        // Сервер не принял отмену — client-side fallback: рвём fetch,
+        // частичная сводка появится в обработчике AbortError.
+        if (abortController) abortController.abort(); else finishPartial();
+      });
+    });
+    }
+    // Полная загрузка страницы: инлайн-скрипт выполняется до CDN Bootstrap в конце <body>,
+    // поэтому ждём window.load. При Turbo-рендеринге bootstrap уже загружен — init сразу.
+    if (typeof bootstrap === 'undefined' && document.readyState !== 'complete') {
+      window.addEventListener('load', init);
+    } else {
+      init();
+    }
+  })();
+  </script>
+
+</div>

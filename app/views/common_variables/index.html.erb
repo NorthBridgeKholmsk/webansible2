@@ -1,0 +1,103 @@
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h1 class="h4 mb-0">Общие переменные</h1>
+</div>
+
+<div class="alert alert-info small">
+  Общие переменные применяются ко всем хостам вне зависимости от организации, типа и роли.
+</div>
+
+<%= form_with url: common_variables_path, method: :patch, id: "common-variables-form" do %>
+  <div class="card border-0 shadow-sm">
+    <table class="table mb-0 align-middle" id="common-variables-table">
+      <thead>
+        <tr>
+          <th scope="col" style="width: 280px">Имя</th>
+          <th scope="col">Значение</th>
+          <th scope="col" style="width: 130px" title="Хранить значение в зашифрованном виде (пароли, ключи)">Зашифровать</th>
+          <th scope="col" style="width: 64px"></th>
+        </tr>
+      </thead>
+      <tbody id="common-variables-rows">
+        <% @common_variables.each do |v| %>
+          <tr>
+            <td><input type="text" name="items[][name]" value="<%= v.name %>" class="form-control"></td>
+            <% if v.encrypted? %>
+              <!-- Зашифрованное значение никогда не предзаполняется; пустой ввод = не менять. -->
+              <td><input type="password" name="items[][value]" value="" class="form-control" placeholder="Не изменять, если пусто" autocomplete="off"></td>
+            <% else %>
+              <td><input type="text" name="items[][value]" value="<%= v.value %>" class="form-control"></td>
+            <% end %>
+            <td><input type="checkbox" name="items[][encrypted]" value="1" <%= "checked" if v.encrypted? %>> </td>
+            <td><button type="button" class="btn btn-sm btn-outline-danger remove-row" title="Удалить"><i class="bi bi-trash"></i></button></td>
+            <input type="hidden" name="items[][id]" value="<%= v.id %>">
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="d-flex gap-2 mt-3 flex-wrap">
+    <button type="button" class="btn btn-outline-secondary" id="add-row"><i class="bi bi-plus"></i> Добавить переменную</button>
+    <%= submit_tag "Сохранить", class: "btn btn-primary" %>
+  </div>
+<% end %>
+
+<script>
+  function initCommonVariablesRows() {
+    var tbody = document.getElementById("common-variables-rows");
+    if (!tbody || tbody.dataset.initialized === "1") return;
+    tbody.dataset.initialized = "1";
+
+    function makeRow(existing) {
+      var tr = document.createElement("tr");
+      var name = existing ? existing.name : "";
+      var value = existing && existing.value !== null ? existing.value : "";
+      var id = existing ? existing.id : "";
+      var encrypted = existing ? !!existing.encrypted : false;
+      // Зашифрованные строки значение не предзаполняют (plaintext не рендерим).
+      tr.innerHTML =
+        '<td><input type="text" name="items[][name]" class="form-control" value="' + name + '"></td>' +
+        '<td><input type="' + (encrypted ? "password" : "text") + '" name="items[][value]" class="form-control"' +
+          (encrypted ? ' placeholder="Не изменять, если пусто" autocomplete="off"' : ' value="' + value + '"') + '></td>' +
+        '<td><input type="checkbox" name="items[][encrypted]" value="1" class="common-var-encrypted-check"' + (encrypted ? " checked" : "") + '></td>' +
+        '<td><button type="button" class="btn btn-sm btn-outline-danger remove-row" title="Удалить"><i class="bi bi-trash"></i></button></td>' +
+        '<input type="hidden" name="items[][id]" value="' + id + '">';
+      var check = tr.querySelector(".common-var-encrypted-check");
+      var valueInput = tr.querySelector('input[name="items[][value]"]');
+      if (check && valueInput) {
+        check.addEventListener("change", function () {
+          if (check.checked) {
+            valueInput.type = "password";
+            valueInput.placeholder = "Не изменять, если пусто";
+            valueInput.autocomplete = "off";
+            valueInput.value = "";
+          } else {
+            valueInput.type = "text";
+            valueInput.placeholder = "";
+          }
+        });
+      }
+      return tr;
+    }
+
+    var addRow = document.getElementById("add-row");
+    if (addRow) {
+      addRow.addEventListener("click", function () {
+        tbody.appendChild(makeRow(null));
+      });
+    }
+
+    tbody.addEventListener("click", function (e) {
+      var btn = e.target.closest ? e.target.closest(".remove-row") : null;
+      if (!btn) return;
+      var tr = btn.closest ? btn.closest("tr") : null;
+      if (!tr) return;
+      if (typeof confirm === "function" && !confirm("Удалить переменную?")) return;
+      tbody.removeChild(tr);
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", initCommonVariablesRows);
+  document.addEventListener("turbo:load", initCommonVariablesRows);
+  document.addEventListener("turbo:render", initCommonVariablesRows);
+</script>

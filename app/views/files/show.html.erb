@@ -1,0 +1,33 @@
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="<%= files_path %>">Файлы</a></li>
+    <li class="breadcrumb-item active"><%= @file.name %></li>
+  </ol>
+</nav>
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h1 class="h4 mb-0"><code><%= @file.name %></code></h1>
+  <div class="d-flex gap-2">
+    <%= link_to edit_file_path(@file), class: "btn btn-outline-primary" do %>
+      <i class="bi bi-pencil"></i> Редактировать
+    <% end %>
+    <%= link_to file_path(@file), class: "btn btn-outline-danger", data: { turbo_method: :delete, turbo_confirm: "Удалить?" } do %>
+      <i class="bi bi-trash"></i> Удалить
+    <% end %>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white">Информация</div>
+  <table class="table mb-0">
+    <tr><th class="w-25">Имя</th><td><code><%= @file.name %></code></td></tr>
+    <tr><th>Путь</th><td><code><%= @file.path %></code></td></tr>
+    <tr><th>Организация</th><td class="text-muted"><%= @file.organization&.name %></td></tr>
+    <tr><th>Тип</th><td><%= @file.mime_type %></td></tr>
+  </table>
+</div>
+
+<div class="card border-0 shadow-sm mt-3">
+  <div class="card-header bg-white">Содержимое</div>
+  <pre class="mb-0 p-3 bg-light" style="max-height: 500px; overflow: auto;"><code><%= @file.content %></code></pre>
+</div>

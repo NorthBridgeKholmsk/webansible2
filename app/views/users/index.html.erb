@@ -1,0 +1,41 @@
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h1 class="h4 mb-0">Пользователи</h1>
+  <%= link_to "Новый пользователь", new_user_path, class: "btn btn-primary" %>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <table class="table table-hover mb-0">
+    <thead>
+      <tr>
+        <th>Логин</th>
+        <th>Роль</th>
+        <th>Активен</th>
+        <th>Создан</th>
+        <th class="text-end">Действия</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @users.each do |user| %>
+        <tr>
+          <td><%= user.login %></td>
+          <td><span class="badge <%= role_badge_class(user.role) %>"><%= user.role %></span></td>
+          <td><%= user.active ? yes_icon : no_icon %></td>
+          <td class="text-muted small"><%= user.created_at.strftime("%d.%m.%Y") %></td>
+          <td class="text-end">
+            <%= link_to edit_user_path(user), class: "btn btn-sm btn-outline-primary" do %>
+              <i class="bi bi-pencil"></i>
+            <% end %>
+            <% unless user == current_user %>
+              <%= link_to user_path(user), class: "btn btn-sm btn-outline-danger", data: { turbo_method: :delete, turbo_confirm: "Удалить?" } do %>
+                <i class="bi bi-trash"></i>
+              <% end %>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+  <% if @users.empty? %>
+    <div class="card-body text-center text-muted">Пользователи отсутствуют</div>
+  <% end %>
+</div>

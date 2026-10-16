@@ -1,7 +1,8 @@
+# Базовый класс фоновых задач приложения.
 class ApplicationJob < ActiveJob::Base
-  # Automatically retry jobs that encountered a deadlock
+  # Автоматический повтор при дедлоке (выключено):
   # retry_on ActiveRecord::Deadlocked
 
-  # Most jobs are safe to ignore if the underlying records are no longer available
+  # Игнорировать задачу, если запись уже удалена (выключено):
   # discard_on ActiveJob::DeserializationError
 end

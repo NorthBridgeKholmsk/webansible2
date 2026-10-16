@@ -1,6 +1,23 @@
+# Намеренно лежит в lib/, а НЕ в app/:
+#
+# Rails 7 автоматически регистрирует каждую директорию app/* как отдельный
+# корень Zeitwerk с топ-урневым неймспейсом. Поэтому файл
+# `app/settings/app_config.rb` мапился на константу `AppConfig` (Object), а не
+# на `Settings::AppConfig`. Попытки «перенаправить» маппинг через приватные
+# API Zeitwerk (@namespace_dirs, define_autoloads_for_dir) и прямой Ruby
+# autoload под модулем Settings НЕ переживали code-reload в development:
+# после первого reload Puma константа терялась и любой рендер layout падал с
+# `NameError: uninitialized constant Settings::AppConfig`.
+#
+# Файл в lib/ не управляется Zeitwerk вовсе: он загружается один раз при
+# старте через обычный require (см. config/initializers/settings_app_config.rb),
+# константа переживает любые reload'ы и работает одинаково в dev/test/prod
+# без приватных API и хрупких хуков.
+
 module Settings
-  # Lightweight settings store. Values are kept in-memory and can be
-  # persisted later (e.g. to a database or YAML file).
+  # Хранилище глобальных настроек приложения.
+  # Значения живут в памяти процесса и персистентно сохраняются в БД
+  # (таблица settings) — см. self.persist!.
   class AppConfig
     DEFAULTS = {
       "app_name" => "WebAnsible",

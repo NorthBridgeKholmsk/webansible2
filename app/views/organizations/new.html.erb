@@ -1,0 +1,14 @@
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="<%= organizations_path %>">Организации</a></li>
+    <li class="breadcrumb-item active"><%= @organization.new_record? ? "Создание" : @organization.name %></li>
+  </ol>
+</nav>
+
+<h1 class="h4 mb-4"><%= @organization.new_record? ? "Новая организация" : "Редактирование: #{@organization.name}" %></h1>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-body">
+    <%= render "form" %>
+  </div>
+</div>

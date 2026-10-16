@@ -1,0 +1,103 @@
+<% title = Settings::ApplicationController::CATEGORY_TITLES[@category] || "Список" %>
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="<%= settings_path %>">Настройки</a></li>
+    <li class="breadcrumb-item active"><%= title %></li>
+  </ol>
+</nav>
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h1 class="h4 mb-0"><%= title %></h1>
+</div>
+
+<% if @category == "role" %>
+  <div class="alert alert-info small">
+    Для ролей хостов третьим столбцем указывайте <b>перечень имён хостов в Zabbix</b>, например:
+    <code>web-server1, web-server2</code>.
+  </div>
+<% else %>
+  <div class="alert alert-info small">
+    Третий столбец — <b>название группы в Zabbix</b>. В выпадающем списке хоста будет показываться «Отображаемое имя»,
+    а в БД сохранится значение из третьего столбца.
+  </div>
+<% end %>
+
+<%= form_with url: update_option_path(category: @category), method: :patch, id: "options-form" do %>
+  <div class="card border-0 shadow-sm">
+    <table class="table mb-0 align-middle" id="options-table">
+      <thead>
+        <tr>
+          <th scope="col" style="width: 56px"><input type="checkbox" id="check-all" title="Выбрать все строки"></th>
+          <th scope="col" style="width: 220px">Отображаемое имя</th>
+          <th scope="col">Название группы в Zabbix</th>
+          <th scope="col" style="width: 64px"></th>
+        </tr>
+      </thead>
+      <tbody id="options-rows">
+        <% @options.each do |o| %>
+          <tr data-option-template="row">
+            <td><input type="checkbox" name="items[][enabled]" value="1" data-field="enabled" checked></td>
+            <td><input type="text" name="items[][label]" value="<%= o.label %>" class="form-control" data-field="label"></td>
+            <td><input type="text" name="items[][value]" value="<%= o.value %>" class="form-control" data-field="value"></td>
+            <td><button type="button" class="btn btn-sm btn-outline-danger remove-row" title="Удалить"><i class="bi bi-trash"></i></button></td>
+            <input type="hidden" name="items[][id]" value="<%= o.id %>">
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="d-flex gap-2 mt-3 flex-wrap">
+    <button type="button" class="btn btn-outline-secondary" id="add-row"><i class="bi bi-plus"></i> Добавить строку</button>
+    <%= submit_tag "Сохранить", class: "btn btn-primary" %>
+    <%= link_to "Отмена", settings_path, class: "btn btn-secondary" %>
+  </div>
+<% end %>
+
+<script>
+  function initOptionsRows() {
+    var tbody = document.getElementById("options-rows");
+    if (!tbody || tbody.dataset.initialized === "1") return;
+    tbody.dataset.initialized = "1";
+
+    function makeRow(existing) {
+      var tr = document.createElement("tr");
+      var enabled = existing && existing.enabled;
+      var id = existing ? existing.id : "";
+      tr.innerHTML =
+        '<td><input type="checkbox" name="items[][enabled]" value="1" data-field="enabled" ' + (enabled ? "checked" : "checked") + '></td>' +
+        '<td><input type="text" name="items[][label]" class="form-control" data-field="label" value="' + (existing ? existing.label : "") + '"></td>' +
+        '<td><input type="text" name="items[][value]" class="form-control" data-field="value" value="' + (existing ? existing.value : "") + '"></td>' +
+        '<td><button type="button" class="btn btn-sm btn-outline-danger remove-row" title="Удалить"><i class="bi bi-trash"></i></button></td>' +
+        '<input type="hidden" name="items[][id]" value="' + id + '">';
+      return tr;
+    }
+
+    var addRow = document.getElementById("add-row");
+    if (addRow) {
+      addRow.addEventListener("click", function () {
+        tbody.appendChild(makeRow(null));
+      });
+    }
+
+    tbody.addEventListener("click", function (e) {
+      var btn = e.target.closest ? e.target.closest(".remove-row") : null;
+      if (!btn) return;
+      var tr = btn.closest ? btn.closest("tr") : null;
+      if (!tr) return;
+      if (typeof confirm === "function" && !confirm("Удалить строку?")) return;
+      tbody.removeChild(tr);
+    });
+
+    var checkAll = document.getElementById("check-all");
+    if (checkAll) {
+      checkAll.addEventListener("change", function () {
+        tbody.querySelectorAll('input[name="items[][enabled]"]').forEach(function (cb) { cb.checked = checkAll.checked; });
+      });
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", initOptionsRows);
+  document.addEventListener("turbo:load", initOptionsRows);
+  document.addEventListener("turbo:render", initOptionsRows);
+</script>

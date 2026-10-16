@@ -1,0 +1,101 @@
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="<%= organizations_path %>">Организации</a></li>
+    <li class="breadcrumb-item active"><%= @organization.name %></li>
+  </ol>
+</nav>
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h1 class="h4 mb-0"><%= @organization.name %></h1>
+  <div class="d-flex gap-2">
+    <%= link_to new_organization_path, class: "btn btn-outline-primary" do %>
+      <i class="bi bi-plus"></i> Добавить
+    <% end %>
+    <%= link_to edit_organization_path(@organization), class: "btn btn-outline-primary" do %>
+      <i class="bi bi-pencil"></i> Редактировать
+    <% end %>
+    <%= link_to organization_path(@organization), class: "btn btn-outline-danger", data: { turbo_method: :delete, turbo_confirm: "Удалить?" } do %>
+      <i class="bi bi-trash"></i> Удалить
+    <% end %>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <div class="display-6 text-primary"><%= @organization.hosts.size %></div>
+        <div class="text-muted small">Хостов</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <div class="display-6 text-primary"><%= @variables.size %></div>
+        <div class="text-muted small">Переменных</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <span class="badge <%= @organization.source == Organization::SOURCE_ZABBIX ? "bg-info text-dark" : "bg-secondary" %> fs-6"><%= @organization.source_label %></span>
+        <div class="text-muted small mt-2">Источник</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white">Переменные организации</div>
+  <div class="card-body">
+    <% @variables.each do |v| %>
+      <div class="d-flex justify-content-between border-bottom py-2">
+        <code><%= v.name %></code>
+        <% if v.encrypted? %>
+          <span class="text-muted" title="Значение зашифровано">••••••</span>
+        <% else %>
+          <span class="text-muted"><%= v.value %></span>
+        <% end %>
+      </div>
+    <% end %>
+    <% if @variables.empty? %>
+      <div class="text-muted">Переменные отсутствуют</div>
+    <% end %>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white">Хосты</div>
+  <table class="table table-hover mb-0">
+    <thead>
+      <tr>
+        <th>Название</th>
+        <th>IP</th>
+        <th>Роль</th>
+        <th class="text-end">Действия</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @organization.hosts.each do |host| %>
+        <tr>
+          <td><%= link_to host.name, host_path(host), class: "text-decoration-none" %></td>
+          <td><%= host.ip %></td>
+          <td><%= host.role %></td>
+          <td class="text-end">
+            <%= link_to host_path(host), class: "btn btn-sm btn-outline-secondary" do %>
+              <i class="bi bi-eye"></i>
+            <% end %>
+            <%= link_to new_run_path(host_id: host.id), class: "btn btn-sm btn-outline-success" do %>
+              <i class="bi bi-play"></i>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+  <% if @organization.hosts.empty? %>
+    <div class="card-body text-center text-muted">Хосты отсутствуют</div>
+  <% end %>
+</div>

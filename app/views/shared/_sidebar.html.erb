@@ -1,0 +1,100 @@
+<nav id="sidebar" class="ba-sidebar bg-dark text-white p-3 position-fixed" style="height: calc(100vh - 56px);">
+  <div class="mb-3">
+    <a href="<%= root_path %>" class="d-flex align-items-center text-decoration-none text-white fw-bold">
+      <i class="bi bi-grid-3x3-gap-fill me-2"></i> WebAnsible
+    </a>
+  </div>
+  <ul class="nav nav-pills flex-column">
+    <li class="nav-item">
+      <%= link_to root_path, class: "nav-link text-white d-flex align-items-center #{current_page?(root_path) ? 'active' : ''}" do %>
+        <i class="bi bi-speedometer2 me-2"></i> Главная
+      <% end %>
+    </li>
+  </ul>
+
+  <div class="nav-group mb-1" data-group="inventory">
+    <div class="nav-group-title" role="button" tabindex="0">
+      <span><i class="bi bi-collection me-2"></i> Инвентаризация</span>
+      <i class="bi bi-chevron-right chevron"></i>
+    </div>
+    <ul class="nav-submenu">
+      <li class="nav-item">
+        <%= link_to organizations_path, class: "nav-link text-white d-flex align-items-center #{current_page?(organizations_path) ? 'active' : ''}" do %>
+          <i class="bi bi-building me-2"></i> Организации
+        <% end %>
+      </li>
+      <li class="nav-item">
+        <%= link_to hosts_path, class: "nav-link text-white d-flex align-items-center #{current_page?(hosts_path) ? 'active' : ''}" do %>
+          <i class="bi bi-server me-2"></i> Хосты
+        <% end %>
+      </li>
+      <li class="nav-item">
+        <%= link_to common_variables_path, class: "nav-link text-white d-flex align-items-center #{current_page?(common_variables_path) ? 'active' : ''}" do %>
+          <i class="bi bi-braces me-2"></i> Общие переменные
+        <% end %>
+      </li>
+    </ul>
+  </div>
+
+  <div class="nav-group mb-1" data-group="project">
+    <div class="nav-group-title" role="button" tabindex="0">
+      <span><i class="bi bi-folder4 me-2"></i> Проект</span>
+      <i class="bi bi-chevron-right chevron"></i>
+    </div>
+    <ul class="nav-submenu">
+      <li class="nav-item">
+        <%= link_to files_path, class: "nav-link text-white d-flex align-items-center #{current_page?(files_path) ? 'active' : ''}" do %>
+          <i class="bi bi-file-earmark me-2"></i> Файлы
+        <% end %>
+      </li>
+      <li class="nav-item">
+        <%= link_to playbooks_path, class: "nav-link text-white d-flex align-items-center #{current_page?(playbooks_path) ? 'active' : ''}" do %>
+          <i class="bi bi-file-earmark-code me-2"></i> Плейбуки
+        <% end %>
+      </li>
+    </ul>
+  </div>
+
+  <ul class="nav nav-pills flex-column">
+    <li class="nav-item">
+      <%= link_to new_run_path, class: "nav-link text-white d-flex align-items-center #{current_page?(new_run_path) ? 'active' : ''}" do %>
+        <i class="bi bi-play-fill me-2"></i> Запуск плейбука
+      <% end %>
+    </li>
+  </ul>
+
+  <hr class="text-white">
+  <div class="nav-group" data-group="settings">
+    <div class="nav-group-title" role="button" tabindex="0">
+      <span><i class="bi bi-gear me-2"></i> Настройки</span>
+      <i class="bi bi-chevron-right chevron"></i>
+    </div>
+    <ul class="nav-submenu">
+      <li class="nav-item">
+        <%= link_to users_path, class: "nav-link text-white d-flex align-items-center #{current_page?(users_path) ? 'active' : ''}" do %>
+          <i class="bi bi-people me-2"></i> Пользователи
+        <% end %>
+      </li>
+      <li class="nav-item">
+        <%= link_to settings_path, class: "nav-link text-white d-flex align-items-center #{current_page?(settings_path) ? 'active' : ''}" do %>
+          <i class="bi bi-app-measure me-2"></i> Приложение
+        <% end %>
+      </li>
+      <li class="nav-item">
+        <%= link_to edit_option_path(category: "type"), class: "nav-link text-white d-flex align-items-center #{current_page?(edit_option_path(category: "type")) ? 'active' : ''}" do %>
+          <i class="bi bi-tag me-2"></i> Типы хостов
+        <% end %>
+      </li>
+      <li class="nav-item">
+        <%= link_to edit_option_path(category: "role"), class: "nav-link text-white d-flex align-items-center #{current_page?(edit_option_path(category: "role")) ? 'active' : ''}" do %>
+          <i class="bi bi-briefcase me-2"></i> Роли хостов
+        <% end %>
+      </li>
+      <li class="nav-item">
+        <%= link_to edit_option_path(category: "os_type"), class: "nav-link text-white d-flex align-items-center #{current_page?(edit_option_path(category: "os_type")) ? 'active' : ''}" do %>
+          <i class="bi bi-hdd-stack me-2"></i> Типы ОС
+        <% end %>
+      </li>
+    </ul>
+  </div>
+</nav>

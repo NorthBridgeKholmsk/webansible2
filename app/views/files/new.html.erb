@@ -1,0 +1,14 @@
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="<%= files_path %>">Файлы</a></li>
+    <li class="breadcrumb-item active"><%= @file.new_record? ? "Создание" : @file.name %></li>
+  </ol>
+</nav>
+
+<h1 class="h4 mb-4"><%= @file.new_record? ? "Новый файл" : "Редактирование: #{@file.name}" %></h1>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-body">
+    <%= render "form" %>
+  </div>
+</div>

@@ -1,0 +1,55 @@
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="<%= hosts_path %>">Хосты</a></li>
+    <li class="breadcrumb-item active"><%= @host.name %></li>
+  </ol>
+</nav>
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h1 class="h4 mb-0"><%= @host.name %></h1>
+  <div class="d-flex gap-2">
+    <%= link_to new_run_path(host_id: @host.id), class: "btn btn-success" do %>
+      <i class="bi bi-play"></i> Запуск
+    <% end %>
+    <%= link_to edit_host_path(@host), class: "btn btn-outline-primary" do %>
+      <i class="bi bi-pencil"></i> Редактировать
+    <% end %>
+    <%= link_to host_path(@host), class: "btn btn-outline-danger", data: { turbo_method: :delete, turbo_confirm: "Удалить?" } do %>
+      <i class="bi bi-trash"></i> Удалить
+    <% end %>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white">Информация</div>
+  <table class="table mb-0">
+    <tr><th class="w-25">Название</th><td><%= @host.name %></td></tr>
+    <tr><th>IP-адрес</th><td><code><%= @host.ip %></code></td></tr>
+    <tr><th>Логин</th><td><%= @host.login.blank? ? "—" : @host.login %></td></tr>
+    <tr><th>Пароль</th><td><%= @host.password.present? ? "••••••" : "—" %></td></tr>
+    <tr><th>Тип хоста</th><td><%= @host.type %></td></tr>
+    <tr><th>Роль</th><td><%= @host.role_array.map { |r| content_tag(:span, r, class: "badge bg-primary me-1") }.join.html_safe %></td></tr>
+    <tr><th>Тип ОС</th><td><%= @host.os_type %></td></tr>
+    <tr><th>Организация</th><td class="text-muted"><%= @host.organization&.name %></td></tr>
+    <tr><th>Источник</th><td><span class="badge <%= @host.source == Host::SOURCE_ZABBIX ? "bg-info text-dark" : "bg-secondary" %>"><%= @host.source_label %></span></td></tr>
+  </table>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white">Переменные</div>
+  <div class="card-body">
+    <% @host.variables.each do |v| %>
+      <div class="d-flex justify-content-between border-bottom py-2">
+        <code><%= v.name %></code>
+        <% if v.encrypted? %>
+          <span class="text-muted" title="Значение зашифровано">••••••</span>
+        <% else %>
+          <span class="text-muted"><%= v.value %></span>
+        <% end %>
+      </div>
+    <% end %>
+    <% if @host.variables.empty? %>
+      <div class="text-muted">Переменные отсутствуют</div>
+    <% end %>
+  </div>
+</div>

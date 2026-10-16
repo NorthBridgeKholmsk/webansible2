@@ -1,0 +1,80 @@
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="<%= new_run_path %>">Запуск плейбука</a></li>
+    <li class="breadcrumb-item active">Запуск #<%= @run.id %></li>
+  </ol>
+</nav>
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h1 class="h4 mb-0 d-flex align-items-center gap-2">
+    Запуск #<%= @run.id %>
+    <span id="run-status-badge" class="badge <%= run_status_badge_class(@run.status) %>"><%= run_status_label(@run.status) %></span>
+  </h1>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white">Информация</div>
+  <table class="table align-middle mb-0">
+    <tr><th class="w-25">Плейбук</th><td><a href="<%= playbook_path(@run.playbook) %>"><%= @run.playbook.name %></a></td></tr>
+    <tr>
+      <th>Хосты</th>
+      <td>
+        <% Array(@run.hosts_snapshot).each do |h| %>
+          <span class="badge bg-light text-dark border me-1"><%= h["name"] %> (<%= h["ip"] %>)</span>
+        <% end %>
+      </td>
+    </tr>
+    <tr><th>Пользователь</th><td><%= @run.user&.login || "—" %></td></tr>
+    <tr><th>Начат</th><td><%= format_run_time(@run.started_at) %></td></tr>
+    <tr><th>Завершён</th><td><%= format_run_time(@run.finished_at) %></td></tr>
+    <tr><th>Код возврата</th><td><code id="run-exit-code-value"><%= @run.exit_code.nil? ? "—" : @run.exit_code %></code></td></tr>
+  </table>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white">Переменные</div>
+  <div class="card-body">
+    <% run_vars = @run.variables || {} %>
+    <% form_vars = run_vars["form"] || {} %>
+    <% if form_vars.any? %>
+      <table class="table table-sm align-middle mb-3">
+        <thead><tr><th>Переменная формы</th><th>Значение</th></tr></thead>
+        <tbody>
+          <% form_vars.each do |name, value| %>
+            <tr>
+              <td><code><%= name %></code></td>
+              <td class="text-muted"><%= secret_like?(name) ? "••••••" : value %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <div class="text-muted small mb-3">Переменных в форме запуска нет.</div>
+    <% end %>
+
+    <% host_vars = run_vars["hosts"] || {} %>
+    <% if host_vars.any? %>
+      <h6 class="text-muted small mb-2">Эффективные значения по хостам (общие → организация → хост)</h6>
+      <table class="table table-sm align-middle mb-0">
+        <thead><tr><th>Хост</th><th>Переменная</th><th>Значение</th></tr></thead>
+        <tbody>
+          <% host_vars.each do |host_name, vars| %>
+            <% (vars || {}).each do |name, value| %>
+              <tr>
+                <td class="text-muted"><%= host_name %></td>
+                <td><code><%= name %></code></td>
+                <td class="text-muted"><%= secret_like?(name) ? "••••••" : value %></td>
+              </tr>
+            <% end %>
+          <% end %>
+        </tbody>
+      </table>
+    <% end %>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white">Вывод</div>
+  <pre id="run-output" data-run-id="<%= @run.id %>"
+       style="margin: 0; padding: 1rem; min-height: 220px; max-height: 65vh; overflow: auto; background: #1e1e1e; color: #d4d4d4; font-size: 0.85rem;"></pre>
+</div>

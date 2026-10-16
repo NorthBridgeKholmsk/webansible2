@@ -1,0 +1,39 @@
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="<%= users_path %>">Пользователи</a></li>
+    <li class="breadcrumb-item active"><%= @user.new_record? ? "Создание" : @user.login %></li>
+  </ol>
+</nav>
+
+<h1 class="h4 mb-4"><%= @user.new_record? ? "Новый пользователь" : "Редактирование: #{@user.login}" %></h1>
+
+<%= form_with model: @user, url: (@user.persisted? ? user_path(@user) : users_path), method: (@user.persisted? ? :patch : :post), class: "row g-3" do |f| %>
+  <div class="col-md-6">
+    <%= f.label :login, "Логин", class: "form-label" %>
+    <%= f.text_field :login, class: "form-control", required: true %>
+  </div>
+  <div class="col-md-6">
+    <%= f.label :password, "Пароль", class: "form-label" %>
+    <%= f.password_field :password, class: "form-control", required: @user.new_record? %>
+  </div>
+  <div class="col-md-6">
+    <%= f.label :password_confirmation, "Подтверждение пароля", class: "form-label" %>
+    <%= f.password_field :password_confirmation, class: "form-control" %>
+  </div>
+  <div class="col-md-6">
+    <%= f.label :role, "Роль", class: "form-label" %>
+    <%= f.select :role, [["admin", "admin"], ["editor", "editor"]], { selected: @user.role.presence || "editor" }, class: "form-select" %>
+  </div>
+  <div class="col-12">
+    <div class="form-check form-switch">
+      <%= f.check_box :active, class: "form-check-input", checked: @user.active.nil? ? true : @user.active %>
+      <%= f.label :active, "Активен", class: "form-check-label" %>
+    </div>
+  </div>
+  <div class="col-12">
+    <div class="d-flex gap-2">
+      <%= f.submit "Сохранить", class: "btn btn-primary" %>
+      <%= link_to "Отмена", users_path, class: "btn btn-secondary" %>
+    </div>
+  </div>
+<% end %>

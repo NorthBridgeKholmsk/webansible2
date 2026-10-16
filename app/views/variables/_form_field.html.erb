@@ -1,0 +1,17 @@
+<div class="variable-row input-group mb-2" data-variable-index="<%= index %>">
+  <%= f.text_field :name, value: variable.name, class: "form-control mb-2 me-1", placeholder: "Имя переменной", required: true, name: "#{prefix}[variables_attributes][#{index}][name]" %>
+  <% if variable.encrypted? %>
+    <!-- Зашифрованное значение никогда не предзаполняется; пустой ввод = не менять. -->
+    <%= f.password_field :value, value: nil, class: "form-control mb-2 me-1", placeholder: "Не изменять, если пусто", autocomplete: "off", name: "#{prefix}[variables_attributes][#{index}][value]" %>
+  <% else %>
+    <%= f.text_field :value, value: variable.value, class: "form-control mb-2 me-1", placeholder: "Значение", name: "#{prefix}[variables_attributes][#{index}][value]" %>
+  <% end %>
+  <!-- Скрытое "0" перед чекбоксом: снятая галочка отправляет false (конвертация в обычную). -->
+  <%= hidden_field_tag "#{prefix}[variables_attributes][#{index}][encrypted]", "0" %>
+  <span class="input-group-text" title="Хранить значение в зашифрованном виде (пароли, ключи)">
+    <%= check_box_tag "#{prefix}[variables_attributes][#{index}][encrypted]", "1", variable.encrypted?, class: "variable-encrypted-check" %>
+  </span>
+  <%= hidden_field_tag "#{prefix}[variables_attributes][#{index}][id]", variable.id %>
+  <%= f.hidden_field :_destroy, value: "0", class: "destroy-input", name: "#{prefix}[variables_attributes][#{index}][_destroy]" %>
+  <button type="button" class="btn btn-outline-danger mb-2 remove-variable"><i class="bi bi-trash"></i></button>
+</div>

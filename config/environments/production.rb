@@ -1,84 +1,83 @@
 require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
-  # Settings specified here will take precedence over those in config/application.rb.
+  # Настройки здесь имеют приоритет над config/application.rb.
 
-  # Code is not reloaded between requests.
+  # Код не перезагружается между запросами (кэшируем классы).
   config.cache_classes = true
 
-  # Eager load code on boot. This eager loads most of Rails and
-  # your application in memory, allowing both threaded web servers
-  # and those relying on copy on write to perform better.
-  # Rake tasks automatically ignore this option for performance.
+  # Eager load при старте: весь код загружается в память — быстрее и для
+  # потоковых веб-серверов, и для режимов с copy-on-write. Rake-задачи этот
+  # параметр игнорируют.
   config.eager_load = true
 
-  # Full error reports are disabled and caching is turned on.
+  # Полные отчёты об ошибках выключены, кэширование включено.
   config.consider_all_requests_local       = false
   config.action_controller.perform_caching = true
 
-  # Ensures that a master key has been made available in either ENV["RAILS_MASTER_KEY"]
-  # or in config/master.key. This key is used to decrypt credentials (and other encrypted files).
+  # Требовать доступности master key (ENV["RAILS_MASTER_KEY"] или
+  # config/master.key) — им расшифровываются credentials и другие зашифрованные файлы.
   # config.require_master_key = true
 
-  # Disable serving static files from the `/public` folder by default since
-  # Apache or NGINX already handles this.
+  # По умолчанию не раздавать статику из /public (этим обычно занимается
+  # Apache/NGINX); включается переменной RAILS_SERVE_STATIC_FILES.
   config.public_file_server.enabled = ENV["RAILS_SERVE_STATIC_FILES"].present?
 
-  # Compress CSS using a preprocessor.
+  # Сжатие CSS препроцессором (выключено).
   # config.assets.css_compressor = :sass
 
-  # Do not fallback to assets pipeline if a precompiled asset is missed.
-  config.assets.compile = false
+  # Ассеты собирает Sprockets-пайплайн: приложение работает на Puma без nginx.
+  config.assets.compile = true
 
-  # Enable serving of images, stylesheets, and JavaScripts from an asset server.
-  # config.asset_host = "http://assets.example.com"
+  # Раздача статики из /public, если включена (см. выше).
+  config.public_file_server.enabled = ENV["RAILS_SERVE_STATIC_FILES"].present?
 
-  # Specifies the header that your server uses for sending files.
+  # Заголовок для передачи файлов через веб-сервер (выключено).
   # config.action_dispatch.x_sendfile_header = "X-Sendfile" # for Apache
   # config.action_dispatch.x_sendfile_header = "X-Accel-Redirect" # for NGINX
 
-  # Store uploaded files on the local file system (see config/storage.yml for options).
+  # Загруженные файлы — на локальной ФС (варианты в config/storage.yml).
   config.active_storage.service = :local
 
-  # Mount Action Cable outside main process or domain.
+  # Гнездо Action Cable вне основного процесса/домена (выключено).
   # config.action_cable.mount_path = nil
   # config.action_cable.url = "wss://example.com/cable"
   # config.action_cable.allowed_request_origins = [ "http://example.com", /http:\/\/example.*/ ]
 
-  # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
+  # Принудительный SSL + HSTS + secure-cookie для всех запросов (выключено).
   # config.force_ssl = true
 
-  # Include generic and useful information about system operation, but avoid logging too much
-  # information to avoid inadvertent exposure of personally identifiable information (PII).
+  # Уровень лога info: достаточно информации о работе системы, но без
+  # избытка данных (защита от случайной утечки PII).
   config.log_level = :info
 
-  # Prepend all log lines with the following tags.
+  # Префикс для всех строк лога — теги ниже.
   config.log_tags = [ :request_id ]
 
-  # Use a different cache store in production.
+  # Другое хранилище кэша в production (выключено).
   # config.cache_store = :mem_cache_store
 
-  # Use a real queuing backend for Active Job (and separate queues per environment).
+  # Реальный бэкенд очередей для Active Job (выключено).
   # config.active_job.queue_adapter     = :resque
   # config.active_job.queue_name_prefix = "webansible2_production"
 
   config.action_mailer.perform_caching = false
 
-  # Ignore bad email addresses and do not raise email delivery errors.
-  # Set this to true and configure the email server for immediate delivery to raise delivery errors.
+  # Игнорировать неверные адреса почты и не падать на ошибках доставки;
+  # для строгости поставить true и настроить почтовый сервер.
   # config.action_mailer.raise_delivery_errors = false
 
-  # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
-  # the I18n.default_locale when a translation cannot be found).
+  # Откат локалей I18n: если перевод для локали не найден, используется
+  # I18n.default_locale.
   config.i18n.fallbacks = true
 
-  # Don't log any deprecations.
+  # Сообщения о депрекациях в лог не пишем.
   config.active_support.report_deprecations = false
 
-  # Use default logging formatter so that PID and timestamp are not suppressed.
+  # Стандартный форматтер лога (PID и метка времени не подавляются).
   config.log_formatter = ::Logger::Formatter.new
 
-  # Use a different logger for distributed setups.
+  # Другой логгер для распределённых конфигураций (выключено).
   # require "syslog/logger"
   # config.logger = ActiveSupport::TaggedLogging.new(Syslog::Logger.new "app-name")
 
@@ -88,6 +87,6 @@ Rails.application.configure do
     config.logger    = ActiveSupport::TaggedLogging.new(logger)
   end
 
-  # Do not dump schema after migrations.
+  # Не выгружать схему БД после миграций.
   config.active_record.dump_schema_after_migration = false
 end

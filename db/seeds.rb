@@ -1,7 +1,9 @@
-# This file should contain all the record creation needed to seed the database with its default values.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Examples:
-#
-#   movies = Movie.create([{ name: "Star Wars" }, { name: "Lord of the Rings" }])
-#   Character.create(name: "Luke", movie: movies.first)
+# Данные для первичного наполнения базы.
+# Загружаются командой bin/rails db:seed (или вместе с созданием БД через db:setup).
+
+unless User.exists?(login: "admin")
+  User.create!(login: "admin", password: "admin", password_confirmation: "admin", role: "admin", active: true)
+  puts "Created default admin user (admin / admin)"
+else
+  puts "Admin user already exists"
+end
