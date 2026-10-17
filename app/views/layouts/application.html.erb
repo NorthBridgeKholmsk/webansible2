@@ -12,9 +12,13 @@
   </head>
   <body class="bg-light">
     <div class="d-flex" style="min-height: 100vh;">
-      <%= render "shared/sidebar" %>
+      <% unless content_for?(:full_page) %>
+        <%= render "shared/sidebar" %>
+      <% end %>
       <div class="d-flex flex-grow-1 flex-column">
-        <%= render "shared/header" %>
+        <% unless content_for?(:full_page) %>
+          <%= render "shared/header" %>
+        <% end %>
         <main class="p-4 flex-grow-1">
           <% flash.each do |type, message| %>
             <div class="alert alert-<%= 'danger' if type == 'alert' %> alert-dismissible fade show" role="alert">
