@@ -1,5 +1,5 @@
 <div class="d-flex align-items-center justify-content-between mb-4">
-  <h1 class="h4 mb-0">Запуск плейбука</h1>
+  <h1 class="h4 mb-0">Запуск плея</h1>
 </div>
 
 <% if @errors %>
@@ -7,19 +7,19 @@
 <% end %>
 
 <%= form_with url: run_path, method: :post, local: true, id: "run-form" do %>
-  <!-- 1. Плейбук -->
+  <!-- 1. Плей -->
   <div class="mb-3">
-    <label class="form-label" for="run-playbook-select">Плейбук</label>
-    <%= select_tag "playbook_id", options_from_collection_for_select(@playbooks, :id, :name, @playbook&.id), prompt: "Выберите плейбук", class: "form-select", id: "run-playbook-select" %>
+    <label class="form-label" for="run-play-select">Плей</label>
+    <%= select_tag "play_id", options_from_collection_for_select(@plays, :id, :name, @play&.id), prompt: "Выберите плей", class: "form-select", id: "run-play-select" %>
   </div>
 
-  <!-- 2. Переменные (из блока vars: выбранного плейбука + дополнительные) -->
+  <!-- 2. Переменные (из блоков vars: выбранного плея + дополнительные) -->
   <div class="mb-3">
     <label class="form-label">Переменные</label>
     <% if @variables_error %>
       <div class="alert alert-warning py-2"><%= @variables_error %></div>
     <% end %>
-    <p class="text-muted small mb-2" id="run-variables-hint">Выберите плейбук — список переменных подгрузится из него.</p>
+    <p class="text-muted small mb-2" id="run-variables-hint">Выберите плей — список переменных подгрузится из него.</p>
     <div id="run-variables-container">
       <% (@parsed_variables || []).each_with_index do |(name, value), i| %>
         <div class="variable-row mb-2 row g-2">

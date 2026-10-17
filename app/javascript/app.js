@@ -1,4 +1,4 @@
-// Поведение фронтенда WebAnsible: тема, сайдбар, формы, запуски плейбуков.
+// Поведение фронтенда WebAnsible: тема, сайдбар, формы, запуск плея.
 (function () {
   "use strict";
   var THEME_KEY = "webansible-theme";
@@ -411,12 +411,12 @@
     container.addEventListener("click", onRemoveVariable);
   }
 
-  // Страница «Запуск плейбука» (runs#new): динамическая подгрузка переменных
-  // из выбранного плейбука (fetch, без перезагрузки), клиентская фильтрация
+  // Страница «Запуск плея» (runs#new): динамическая подгрузка переменных
+  // из выбранного плея (fetch, без перезагрузки), клиентская фильтрация
   // хостов по имени или IP, организации, типу, роли и ОС — применяется строго
   // по кнопке «Применить» (+ «Сбросить») + счётчик выбранных.
   function bindRunForm() {
-    var select = document.getElementById("run-playbook-select");
+    var select = document.getElementById("run-play-select");
     if (!select) return; // не страница запуска
 
     var container = document.getElementById("run-variables-container");
@@ -427,7 +427,7 @@
     var countEl = document.getElementById("run-selected-count");
     var selectAll = document.getElementById("run-select-all");
 
-    // --- Переменные из плейбука (fetch при смене выбора) ---
+    // --- Переменные из плея (fetch при смене выбора) ---
     function buildVariableRow(idx, name, value) {
       var row = document.createElement("div");
       row.className = "variable-row mb-2 row g-2";
@@ -456,14 +456,14 @@
 
     function showHint(text) {
       if (!hint) return;
-      hint.textContent = text || "Выберите плейбук — список переменных подгрузится из него.";
+      hint.textContent = text || "Выберите плей — список переменных подгрузится из него.";
       hint.style.display = "";
     }
 
-    function loadVariables(playbookId) {
+    function loadVariables(playId) {
       container.innerHTML = "";
-      if (!playbookId) { showHint(); return; }
-      fetch("/run/variables?playbook_id=" + encodeURIComponent(playbookId), {
+      if (!playId) { showHint(); return; }
+      fetch("/run/variables?play_id=" + encodeURIComponent(playId), {
         headers: { Accept: "application/json" }
       })
         .then(function (res) {
@@ -590,7 +590,7 @@
     }
   }
 
-  // --- Live-вывод запуска плейбука (страница /runs/:id) ---
+  // --- Live-вывод запуска плея (страница /runs/:id) ---
   var outputPollTimer = null;
   function stopOutputPolling() {
     if (outputPollTimer !== null) { clearInterval(outputPollTimer); outputPollTimer = null; }

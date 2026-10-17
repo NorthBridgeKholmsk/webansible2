@@ -130,11 +130,11 @@ class VariablesSecretsTest < ActionDispatch::IntegrationTest
     assert VariableCipher.encrypted?(cv.read_attribute(:value))
   end
 
-  test "runs/new не рендерит секрет зашифрованной переменной плейбука" do
-    pb = Playbook.create!(name: "pb-secrets-#{SecureRandom.hex(3)}", os_type: "ubuntu")
+  test "runs/new не рендерит секрет зашифрованной переменной плея" do
+    pb = Play.create!(name: "pl-secrets-#{SecureRandom.hex(3)}", os_type: "ubuntu")
     pb.variables.create!(name: "pb_secret", value: "PBsecret!", encrypted: true)
 
-    get new_run_path(playbook_id: pb.id)
+    get new_run_path(play_id: pb.id)
     assert_response :success
     refute_includes response.body, "PBsecret!"
   end

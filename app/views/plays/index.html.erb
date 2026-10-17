@@ -1,0 +1,40 @@
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h1 class="h4 mb-0">Плеи</h1>
+  <%= link_to "Новый плей", new_play_path, class: "btn btn-primary" %>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <table class="table table-hover mb-0">
+    <thead>
+      <tr>
+        <th>Название</th>
+        <th>ОС</th>
+        <th>Активен</th>
+        <th class="text-end">Действия</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @plays.each do |play| %>
+        <tr>
+          <td><%= link_to play.name, play_path(play), class: "text-decoration-none" %></td>
+          <td><span class="badge bg-secondary"><%= play.os_type %></span></td>
+          <td><%= play.enabled ? yes_icon : no_icon %></td>
+          <td class="text-end">
+            <%= link_to new_run_path(play_id: play.id), class: "btn btn-sm btn-outline-success", title: "Запуск" do %>
+              <i class="bi bi-play"></i>
+            <% end %>
+            <%= link_to edit_play_path(play), class: "btn btn-sm btn-outline-primary" do %>
+              <i class="bi bi-pencil"></i>
+            <% end %>
+            <%= link_to play_path(play), class: "btn btn-sm btn-outline-danger", data: { turbo_method: :delete, turbo_confirm: "Удалить?" } do %>
+              <i class="bi bi-trash"></i>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+  <% if @plays.empty? %>
+    <div class="card-body text-center text-muted">Плеи отсутствуют</div>
+  <% end %>
+</div>

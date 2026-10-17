@@ -1,11 +1,11 @@
 require "test_helper"
 
-# Страница «Запуск плейбука» (runs#new):
-# - выбор плейбука, динамические переменные из блока vars: YAML;
+# Страница «Запуск плея» (runs#new):
+# - выбор плея, динамические переменные из блока vars: YAML;
 # - фильтр хостов и список с чекбоксами;
 # - запуск (spawn стабится) с выбранными хостами и переменными.
 class RunPageTest < ActionDispatch::IntegrationTest
-  PLAYBOOK_YAML = <<~YAML
+  PLAY_YAML = <<~YAML
     ---
     - name: Deploy and configure Zabbix Agent
       hosts: all
@@ -31,7 +31,7 @@ class RunPageTest < ActionDispatch::IntegrationTest
     assert_response :redirect
 
     @organization = Organization.create!(name: "org-#{SecureRandom.hex(4)}")
-    @playbook = Playbook.create!(name: "pb-run-#{SecureRandom.hex(3)}", os_type: "ubuntu", content: PLAYBOOK_YAML)
+    @play = Play.create!(name: "pl-run-#{SecureRandom.hex(3)}", os_type: "ubuntu", content: PLAY_YAML)
 
     # Не запускаем реальный ansible в тестах: изолируем файлы запусков по
     # процессу и запоминаем оригинальный метод spawn для восстановления.
@@ -55,7 +55,7 @@ class RunPageTest < ActionDispatch::IntegrationTest
     }
   end
 
-  test "страница запуска содержит плейбук, фильтр хостов и таблицу с чекбоксами" do
+  test "страница запуска содержит плей, фильтр хостов и таблицу с чекбоксами" do
     h1 = Host.create!(host_params("ws-run-1", ip: "10.1.0.1"))
     org2 = Organization.create!(name: "org2-#{SecureRandom.hex(4)}")
     h2 = Host.create!(host_params("db-run-2", ip: "10.1.0.2", type: "Server", os_type: "Ubuntu", role: ["db"])
@@ -64,10 +64,10 @@ class RunPageTest < ActionDispatch::IntegrationTest
     get new_run_path
     assert_response :success
 
-    # Плейбук и кнопки.
-    assert_match(%(id="run-playbook-select"), @response.body)
-    assert_match(@playbook.name, @response.body)
-    assert_match("Запуск плейбука", @response.body)
+    # Плей и кнопки.
+    assert_match(%(id="run-play-select"), @response.body)
+    assert_match(@play.name, @response.body)
+    assert_match("Запуск плея", @response.body)
     assert_match(/>Отмена</, @response.body)
 
     # Поля фильтра: единый поиск по имени/IP + организация/тип/роль/ОС.
@@ -108,8 +108,8 @@ class RunPageTest < ActionDispatch::IntegrationTest
     assert_match(%(id="add-variable"), @response.body)
   end
 
-  test "глубокая ссылка ?playbook_id предзаполняет переменные из YAML" do
-    get new_run_path, params: { playbook_id: @playbook.id }
+  test "глубокая ссылка ?play_id предзаполняет переменные из YAML" do
+    get new_run_path, params: { play_id: @play.id }
     assert_response :success
 
     rows = @response.body.scan(/name="variables\[\d+\]\[name\]"/).size
@@ -118,8 +118,8 @@ class RunPageTest < ActionDispatch::IntegrationTest
     assert_no_match("task_level_var", @response.body)
   end
 
-  test "endpoint /run/variables отдаёт JSON переменных плейбука" do
-    get run_variables_path, params: { playbook_id: @playbook.id }
+  test "endpoint /run/variables отдаёт JSON переменных плея" do
+    get run_variables_path, params: { play_id: @play.id }
     assert_response :success
     data = JSON.parse(@response.body)
     assert_equal [
@@ -128,12 +128,12 @@ class RunPageTest < ActionDispatch::IntegrationTest
     ], data
   end
 
-  test "endpoint /run/variables: неизвестный плейбук — 404, битый YAML — 422" do
-    get run_variables_path, params: { playbook_id: 999_999 }
+  test "endpoint /run/variables: неизвестный плей — 404, битый YAML — 422" do
+    get run_variables_path, params: { play_id: 999_999 }
     assert_response :not_found
 
-    broken = Playbook.create!(name: "pb-broken-#{SecureRandom.hex(3)}", os_type: "ubuntu", content: "---\n- name: [unclosed\n")
-    get run_variables_path, params: { playbook_id: broken.id }
+    broken = Play.create!(name: "pl-broken-#{SecureRandom.hex(3)}", os_type: "ubuntu", content: "---\n- name: [unclosed\n")
+    get run_variables_path, params: { play_id: broken.id }
     assert_response :unprocessable_entity
     assert_match(/Ошибка разбора YAML/, JSON.parse(@response.body)["error"])
   end
@@ -152,7 +152,7 @@ class RunPageTest < ActionDispatch::IntegrationTest
     end
 
     post run_path, params: {
-      playbook_id: @playbook.id,
+      play_id: @play.id,
       host_ids: [h1.id.to_s, h2.id.to_s],
       variables: {
         "0" => { name: "zabbix_agent_package", value: "zabbix-agent-6.0" },
@@ -166,15 +166,15 @@ class RunPageTest < ActionDispatch::IntegrationTest
     assert_redirected_to run_show_path(run)
     follow_redirect!
     assert_response :success
-    assert_match(@playbook.name, @response.body)
+    assert_match(@play.name, @response.body)
     assert_match(h1.name, @response.body)
     assert_match(h2.name, @response.body)
   end
 
   test "запуск без хостов — ошибка и повторный рендер с предзаполненными переменными" do
-    post run_path, params: { playbook_id: @playbook.id, host_ids: [] }
+    post run_path, params: { play_id: @play.id, host_ids: [] }
     assert_response :unprocessable_entity
-    assert_match("Выберите плейбук и хотя бы один хост.", @response.body)
+    assert_match("Выберите плей и хотя бы один хост.", @response.body)
 
     # Переменные из YAML сохранены при повторном рендере.
     rows = @response.body.scan(/name="variables\[\d+\]\[name\]"/).size

@@ -22,12 +22,12 @@ class RunLauncher
   end
 
   # hosts — массив пар [имя_хоста, эффективные_переменные] (RunVariables.for_host).
-  def self.launch(run, playbook:, hosts:, form_vars:)
+  def self.launch(run, play:, hosts:, form_vars:)
     dir = run.run_dir
     FileUtils.mkdir_p(dir)
     File.chmod(0o700, dir)
 
-    write_protected(dir.join("playbook.yml"), playbook.content.to_s)
+    write_protected(dir.join("play.yml"), play.content.to_s)
     write_protected(dir.join("inventory.yml"), build_inventory(hosts).to_yaml)
     # Переменные формы пишутся всегда (для аудита), но -e добавляется в команду
     # только при непустых — пустой extra-vars файл ansible обрабатывает криво.
@@ -49,7 +49,7 @@ class RunLauncher
     cfg_path = dir.join("ansible.cfg")
     extra_vars = form_vars.empty? ? "" : " -e @vars.yml"
     command = "ANSIBLE_CONFIG=#{cfg_path} #{ANSIBLE_PLAYBOOK_BIN} " \
-              "-i inventory.yml playbook.yml#{extra_vars}; echo $? > exit_code"
+              "-i inventory.yml play.yml#{extra_vars}; echo $? > exit_code"
 
     pid = spawn_command(command, dir: dir, log_path: run.log_path)
     write_protected(run.pid_path, "#{pid}\n")

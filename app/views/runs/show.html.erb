@@ -1,6 +1,6 @@
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
-    <li class="breadcrumb-item"><a href="<%= new_run_path %>">Запуск плейбука</a></li>
+    <li class="breadcrumb-item"><a href="<%= new_run_path %>">Запуск плея</a></li>
     <li class="breadcrumb-item active">Запуск #<%= @run.id %></li>
   </ol>
 </nav>
@@ -15,7 +15,7 @@
 <div class="card border-0 shadow-sm mb-4">
   <div class="card-header bg-white">Информация</div>
   <table class="table align-middle mb-0">
-    <tr><th class="w-25">Плейбук</th><td><a href="<%= playbook_path(@run.playbook) %>"><%= @run.playbook.name %></a></td></tr>
+    <tr><th class="w-25">Плей</th><td><a href="<%= play_path(@run.play) %>"><%= @run.play.name %></a></td></tr>
     <tr>
       <th>Хосты</th>
       <td>

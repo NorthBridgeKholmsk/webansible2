@@ -20,14 +20,14 @@ Rails.application.routes.draw do
   get "common-variables", to: "common_variables#index", as: :common_variables
   patch "common-variables", to: "common_variables#update"
 
-  resources :playbooks, only: [:index, :show, :new, :create, :edit, :update, :destroy]
+  resources :plays, only: [:index, :show, :new, :create, :edit, :update, :destroy]
   resources :files, only: [:index, :show, :new, :create, :edit, :update, :destroy]
 
   resources :users, only: [:index, :new, :create, :edit, :update, :destroy]
 
   get "run", to: "runs#new", as: :new_run
    post "run", to: "runs#create", as: :run
-  # JSON-список play-уровневых переменных плейбука (fetch при выборе на странице запуска).
+  # JSON-список переменных плея (fetch при выборе на странице запуска).
   get "run/variables", to: "runs#variables", as: :run_variables
 
   # Результаты запусков: страница с live-выводом + endpoint опроса новых кусков лога.

@@ -48,8 +48,8 @@
         <% end %>
       </li>
       <li class="nav-item">
-        <%= link_to playbooks_path, class: "nav-link text-white d-flex align-items-center #{current_page?(playbooks_path) ? 'active' : ''}" do %>
-          <i class="bi bi-file-earmark-code me-2"></i> Плейбуки
+        <%= link_to plays_path, class: "nav-link text-white d-flex align-items-center #{current_page?(plays_path) ? 'active' : ''}" do %>
+          <i class="bi bi-file-earmark-code me-2"></i> Плеи
         <% end %>
       </li>
     </ul>
@@ -58,7 +58,7 @@
   <ul class="nav nav-pills flex-column">
     <li class="nav-item">
       <%= link_to new_run_path, class: "nav-link text-white d-flex align-items-center #{current_page?(new_run_path) ? 'active' : ''}" do %>
-        <i class="bi bi-play-fill me-2"></i> Запуск плейбука
+        <i class="bi bi-play-fill me-2"></i> Запуск плея
       <% end %>
     </li>
   </ul>

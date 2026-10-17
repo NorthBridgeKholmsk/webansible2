@@ -226,8 +226,8 @@ class HostsOrganizationsVariablesTest < ActionDispatch::IntegrationTest
     assert_not_nil Host.find_by(id: foreign_host.id)
   end
 
-  test "организация удаляется без ошибки, даже если в системе есть плейбуки" do
-    Playbook.create!(name: "pb-#{SecureRandom.hex(3)}", os_type: "ubuntu")
+  test "организация удаляется без ошибки, даже если в системе есть плеи" do
+    Play.create!(name: "pl-#{SecureRandom.hex(3)}", os_type: "ubuntu")
 
     delete organization_path(@organization)
     assert_response :redirect

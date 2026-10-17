@@ -10,7 +10,7 @@ class User < ApplicationRecord
 
   # Роль пользователя:
   #   admin  — полный доступ (пользователи, настройки, синхронизация Zabbix);
-  #   editor — работа с данными (организации, хосты, плейбуки, запуски).
+  #   editor — работа с данными (организации, хосты, плеи, запуски).
   enum role: { admin: "admin", editor: "editor" }
 
   def full_name

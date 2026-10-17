@@ -1,11 +1,11 @@
 require "test_helper"
 require "base64"
 
-# Реальный запуск плейбука (RunLauncher): файлы на диске, отсоединённый
+# Реальный запуск плея (RunLauncher): файлы на диске, отсоединённый
 # процесс, опрос вывода через /runs/:id/output. Метод spawn стабится, чтобы
 # тесты не зависели от реальных хостов и ansible-playbook.
 class RunExecutionTest < ActionDispatch::IntegrationTest
-  PLAYBOOK_YAML = <<~YAML
+  PLAY_YAML = <<~YAML
     ---
     - name: Test play
       hosts: all
@@ -27,7 +27,7 @@ class RunExecutionTest < ActionDispatch::IntegrationTest
     post sessions_path, params: { login: "admin", password: "admin" }
 
     @organization = Organization.create!(name: "org-exec-#{SecureRandom.hex(4)}")
-    @playbook = Playbook.create!(name: "pb-exec-#{SecureRandom.hex(3)}", os_type: "ubuntu", content: PLAYBOOK_YAML)
+    @play = Play.create!(name: "pl-exec-#{SecureRandom.hex(3)}", os_type: "ubuntu", content: PLAY_YAML)
 
     # Параллельные тестовые воркеры имеют отдельные БД, но общий Rails.root/tmp —
     # изолируем файлы запусков по процессу.
@@ -63,7 +63,7 @@ class RunExecutionTest < ActionDispatch::IntegrationTest
   end
 
   def post_run(host_ids:, variables: {})
-    post run_path, params: { playbook_id: @playbook.id, host_ids: host_ids, variables: variables }
+    post run_path, params: { play_id: @play.id, host_ids: host_ids, variables: variables }
   end
 
   test "запуск создаёт файлы и редиректит на страницу запуска" do
@@ -83,7 +83,7 @@ class RunExecutionTest < ActionDispatch::IntegrationTest
     assert_equal Run::STATUS_RUNNING, run.reload.status
 
     dir = run.run_dir
-    assert_equal @playbook.content, File.read(dir.join("playbook.yml"))
+    assert_equal @play.content, File.read(dir.join("play.yml"))
 
     inventory = YAML.safe_load(File.read(dir.join("inventory.yml")))
     host_vars = inventory["all"]["hosts"][h1.name]
@@ -102,7 +102,7 @@ class RunExecutionTest < ActionDispatch::IntegrationTest
 
     follow_redirect!
     assert_response :success
-    assert_match(@playbook.name, @response.body)
+    assert_match(@play.name, @response.body)
     assert_match(h1.name, @response.body)
   end
 

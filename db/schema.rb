@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_10_13_000001) do
+ActiveRecord::Schema[7.0].define(version: 2026_10_17_000000) do
   create_table "common_variables", force: :cascade do |t|
     t.string "name", null: false
     t.text "value"
@@ -54,7 +54,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_10_13_000001) do
     t.string "source", default: "manual", null: false
   end
 
-  create_table "playbooks", force: :cascade do |t|
+  create_table "plays", force: :cascade do |t|
     t.string "name", null: false
     t.string "os_type", default: "ubuntu", null: false
     t.text "content"
@@ -65,7 +65,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_10_13_000001) do
   end
 
   create_table "runs", force: :cascade do |t|
-    t.integer "playbook_id", null: false
+    t.integer "play_id", null: false
     t.integer "user_id"
     t.string "status", default: "pending", null: false
     t.integer "exit_code"
@@ -75,7 +75,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_10_13_000001) do
     t.text "variables"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["playbook_id"], name: "index_runs_on_playbook_id"
+    t.index ["play_id"], name: "index_runs_on_play_id"
   end
 
   create_table "settings", force: :cascade do |t|

@@ -1,10 +1,10 @@
-# Плейбук Ansible (YAML-содержимое хранится в БД).
+# Плей Ansible (YAML-содержимое хранится в БД).
 #
 # При запуске содержимое пишется во временный файл и исполняется
 # ansible-playbook (см. RunLauncher). os_type — тип ОС, для которого
-# предназначен плейбук.
-class Playbook < ApplicationRecord
-  # Переменные уровня плейбука (имя/значение), доступные при его запуске.
+# предназначен плей.
+class Play < ApplicationRecord
+  # Переменные уровня плея (имя/значение), доступные при его запуске.
   has_many :variables, as: :variableable, dependent: :destroy
 
   validates :name, presence: true

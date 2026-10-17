@@ -1,4 +1,4 @@
-# Запуск плейбука на наборе хостов.
+# Запуск плея на наборе хостов.
 #
 # Сам процесс запускается отсоединённо от Puma (см. RunLauncher):
 # ansible-playbook работает в собственном процессе-группе, вывод идёт на диск
@@ -14,7 +14,7 @@ class Run < ApplicationRecord
   STATUSES = [STATUS_PENDING, STATUS_RUNNING, STATUS_SUCCEEDED, STATUS_FAILED].freeze
   TERMINAL_STATUSES = [STATUS_SUCCEEDED, STATUS_FAILED].freeze
 
-  belongs_to :playbook
+  belongs_to :play
   belongs_to :user, optional: true
 
   serialize :hosts_snapshot, coder: JSON

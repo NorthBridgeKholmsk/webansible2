@@ -1,31 +1,31 @@
 class RunsController < ApplicationController
-  # GET /run — страница запуска плейбука.
+  # GET /run — страница запуска плея.
   def new
-    @playbooks = Playbook.order(:name)
+    @plays = Play.order(:name)
     @all_hosts = Host.includes(:organization).order(:name)
 
-    # Глубокая ссылка ?playbook_id=N: предзаполняем переменные из YAML плейбука,
+    # Глубокая ссылка ?play_id=N: предзаполняем переменные из YAML плея,
     # чтобы страница выглядела так же, как после выбора через JS.
-    if params[:playbook_id].present?
-      @playbook = Playbook.find_by(id: params[:playbook_id])
-      result = PlaybookVariableParser.parse(@playbook&.content)
+    if params[:play_id].present?
+      @play = Play.find_by(id: params[:play_id])
+      result = PlayVariableParser.parse(@play&.content)
       @parsed_variables = result.ok? ? result.variables : []
       @variables_error = result.error unless result.ok?
     end
 
-    content_for(:page_title) { "Запуск плейбука" }
+    content_for(:page_title) { "Запуск плея" }
   end
 
-  # GET /run/variables?playbook_id=N — JSON-список play-уровневых переменных
-  # плейбука (блок vars: в начале файла). Вызывается fetch'ем из JS при смене
-  # выбранного плейбука, без перезагрузки страницы.
+  # GET /run/variables?play_id=N — JSON-список переменных плея (блоки vars:
+  # в начале файла). Вызывается fetch'ем из JS при смене выбранного плея,
+  # без перезагрузки страницы.
   def variables
-    playbook = Playbook.find_by(id: params[:playbook_id])
-    if playbook.nil?
-      render json: { error: "Плейбук не найден" }, status: :not_found and return
+    play = Play.find_by(id: params[:play_id])
+    if play.nil?
+      render json: { error: "Плей не найден" }, status: :not_found and return
     end
 
-    result = PlaybookVariableParser.parse(playbook.content)
+    result = PlayVariableParser.parse(play.content)
     if result.ok?
       render json: result.variables.map { |name, value| { name: name, value: value } }
     else
@@ -33,29 +33,29 @@ class RunsController < ApplicationController
     end
   end
 
-  # POST /run — запуск плейбука на выбранных хостах: создаёт Run со снапшотом,
-  # пишет файлы (плейбук/инвентарь/переменные) и стартует ansible-playbook
+  # POST /run — запуск плея на выбранных хостах: создаёт Run со снапшотом,
+  # пишет файлы (плей/инвентарь/переменные) и стартует ansible-playbook
   # отсоединённым процессом. Страница запуска — /runs/:id с live-выводом.
   def create
-    @playbooks = Playbook.order(:name)
+    @plays = Play.order(:name)
     @all_hosts = Host.includes(:organization).order(:name)
     @errors = nil
 
-    playbook_id = params[:playbook_id].to_s.strip
+    play_id = params[:play_id].to_s.strip
     # Чекбоксы списка хостов шлют массив host_ids[]; для совместимости
     # принимаем и старую запятой-строку.
     raw_host_ids = params[:host_ids]
     host_ids = (raw_host_ids.is_a?(Array) ? raw_host_ids : raw_host_ids.to_s.split(","))
              .map(&:to_s).reject { |v| v.strip.empty? }
 
-    @playbook = Playbook.find_by(id: playbook_id) if playbook_id.present?
+    @play = Play.find_by(id: play_id) if play_id.present?
     hosts = Host.where(id: host_ids).includes(:organization).to_a
 
-    if @playbook.nil? || hosts.empty?
-      @errors = "Выберите плейбук и хотя бы один хост."
+    if @play.nil? || hosts.empty?
+      @errors = "Выберите плей и хотя бы один хост."
       # Сохраняем предзаполнение переменных при повторном рендере формы.
-      if @playbook
-        result = PlaybookVariableParser.parse(@playbook.content)
+      if @play
+        result = PlayVariableParser.parse(@play.content)
         @parsed_variables = result.ok? ? result.variables : []
       end
       render :new, status: :unprocessable_entity and return
@@ -65,7 +65,7 @@ class RunsController < ApplicationController
     effective_hosts = hosts.map { |h| [h.name, RunVariables.for_host(h)] }
 
     run = Run.create!(
-      playbook: @playbook,
+      play: @play,
       user: current_user,
       status: Run::STATUS_PENDING,
       hosts_snapshot: hosts.map { |h| { "name" => h.name, "ip" => h.ip } },
@@ -73,7 +73,7 @@ class RunsController < ApplicationController
     )
 
     begin
-      RunLauncher.launch(run, playbook: @playbook, hosts: effective_hosts, form_vars: form_vars)
+      RunLauncher.launch(run, play: @play, hosts: effective_hosts, form_vars: form_vars)
     rescue StandardError => e
       run.update_columns(status: Run::STATUS_FAILED, finished_at: Time.current)
       Rails.logger.error("Run ##{run.id} launch failed: #{e.message}")

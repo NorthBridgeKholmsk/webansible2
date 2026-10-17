@@ -1,9 +1,9 @@
 require "test_helper"
 
-# Парсер play-уровневых переменных из YAML плейбука (PlaybookVariableParser).
-class PlaybookVariableParserTest < ActiveSupport::TestCase
+# Парсер переменных из YAML-содержимого плея (PlayVariableParser).
+class PlayVariableParserTest < ActiveSupport::TestCase
   def parse(yaml)
-    PlaybookVariableParser.parse(yaml)
+    PlayVariableParser.parse(yaml)
   end
 
   test "parses vars block from the top of a single play, preserving order" do
@@ -104,7 +104,7 @@ class PlaybookVariableParserTest < ActiveSupport::TestCase
     assert_equal [["number", "123"], ["flag", "true"], ["nothing", ""]], result.variables
   end
 
-  test "playbook without vars block returns ok with empty list" do
+  test "play without vars block returns ok with empty list" do
     result = parse("---\n- name: Play\n  hosts: all\n  tasks:\n    - command: echo hi\n")
 
     assert result.ok?
@@ -132,6 +132,6 @@ class PlaybookVariableParserTest < ActiveSupport::TestCase
     result = parse("just some text")
 
     refute result.ok?
-    assert_match(/не найдено ни одного плейа/, result.error)
+    assert_match(/блоков с переменными/, result.error)
   end
 end
