@@ -35,9 +35,13 @@ class UsersController < ApplicationController
   end
 
   def destroy
-    User.destroy_all if current_user.admin? # simplistic; keep at least one
-    @user.destroy
-    redirect_to users_path, notice: "Пользователь удалён"
+    # Нельзя удалить собственный аккаунт — иначе админ заблокирует себя.
+    if @user == current_user
+      redirect_to users_path, alert: "Нельзя удалить собственный аккаунт"
+    else
+      @user.destroy
+      redirect_to users_path, notice: "Пользователь удалён"
+    end
   end
 
   private
