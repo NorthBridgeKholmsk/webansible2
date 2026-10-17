@@ -7,37 +7,12 @@
     <div class="card-header bg-white">Общие</div>
     <div class="card-body">
       <div class="mb-3">
-        <%= label_tag "settings[app_name]", "Название приложения", class: "form-label" %>
-        <%= text_field_tag "settings[app_name]", @settings["app_name"], class: "form-control", style: "max-width: 400px" %>
-      </div>
-      <div class="mb-3">
         <%= label_tag "settings[theme]", "Тема", class: "form-label" %>
         <%= select_tag "settings[theme]", options_for_select([["Светлая", "light"], ["Тёмная", "dark"]], @settings["theme"]), class: "form-select", style: "max-width: 400px" %>
       </div>
     </div>
   </div>
 
-  <div class="card border-0 shadow-sm mb-3">
-    <div class="card-header bg-white">Ansible</div>
-    <div class="card-body">
-      <div class="mb-3">
-        <%= label_tag "settings[ansible_path]", "Путь к ansible", class: "form-label" %>
-        <%= text_field_tag "settings[ansible_path]", @settings["ansible_path"], class: "form-control", style: "max-width: 500px" %>
-      </div>
-      <div class="mb-3">
-        <%= label_tag "settings[ansible_playbook_path]", "Путь к ansible-playbook", class: "form-label" %>
-        <%= text_field_tag "settings[ansible_playbook_path]", @settings["ansible_playbook_path"], class: "form-control", style: "max-width: 500px" %>
-      </div>
-      <div class="mb-3">
-        <%= label_tag "settings[default_user]", "Пользователь по умолчанию", class: "form-label" %>
-        <%= text_field_tag "settings[default_user]", @settings["default_user"], class: "form-control", style: "max-width: 300px" %>
-      </div>
-      <div class="mb-3">
-        <%= label_tag "settings[default_timeout]", "Таймаут (сек)", class: "form-label" %>
-        <%= number_field_tag "settings[default_timeout]", @settings["default_timeout"], class: "form-control", style: "max-width: 200px", min: 1 %>
-      </div>
-    </div>
-  </div>
   <div class="card border-0 shadow-sm mb-3">
     <div class="card-header bg-white">Zabbix</div>
     <div class="card-body">
@@ -57,7 +32,6 @@
       </div>
     </div>
   </div>
-
 
   <div class="d-flex gap-2">
     <%= submit_tag "Сохранить", class: "btn btn-primary" %>

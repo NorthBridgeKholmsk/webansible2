@@ -20,11 +20,6 @@ module Settings
   # (таблица settings) — см. self.persist!.
   class AppConfig
     DEFAULTS = {
-      "app_name" => "WebAnsible",
-      "ansible_path" => "/usr/bin/ansible",
-      "ansible_playbook_path" => "/usr/bin/ansible-playbook",
-      "default_timeout" => "300",
-      "default_user" => "root",
       "theme" => "light"
     }.freeze
 
