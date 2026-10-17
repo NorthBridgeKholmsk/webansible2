@@ -6,6 +6,8 @@
 class Play < ApplicationRecord
   # Переменные уровня плея (имя/значение), доступные при его запуске.
   has_many :variables, as: :variableable, dependent: :destroy
+  # Ссылки из плейбуков: удаление плея убирает его из всех ветвлений.
+  has_many :playbook_section_plays, dependent: :destroy
 
   validates :name, presence: true
   validates :os_type, presence: true

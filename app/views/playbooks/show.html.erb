@@ -1,0 +1,51 @@
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="<%= playbooks_path %>">Плейбуки</a></li>
+    <li class="breadcrumb-item active"><%= @playbook.name %></li>
+  </ol>
+</nav>
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h1 class="h4 mb-0"><%= @playbook.name %></h1>
+  <div class="d-flex gap-2">
+    <%= link_to edit_playbook_path(@playbook), class: "btn btn-outline-primary" do %>
+      <i class="bi bi-pencil"></i> Редактировать
+    <% end %>
+    <%= link_to playbook_path(@playbook), class: "btn btn-outline-danger", data: { turbo_method: :delete, turbo_confirm: "Удалить?" } do %>
+      <i class="bi bi-trash"></i> Удалить
+    <% end %>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white">Информация</div>
+  <table class="table mb-0">
+    <tr><th class="w-25">Название</th><td><%= @playbook.name %></td></tr>
+    <tr><th>Описание</th><td class="text-muted"><%= @playbook.description %></td></tr>
+  </table>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white">Ветвления по ОС</div>
+  <% if @playbook.sections.empty? %>
+    <div class="card-body text-center text-muted">Ветвления отсутствуют — добавьте их в редакторе</div>
+  <% else %>
+    <% @playbook.sections.each do |section| %>
+      <div class="card-body border-bottom py-3">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <span class="badge bg-primary"><%= section.os_type %></span>
+          <span class="text-muted small"><%= section.section_plays.count %> плеев</span>
+        </div>
+        <% if section.plays.empty? %>
+          <div class="text-muted small">Плеи не добавлены</div>
+        <% else %>
+          <ol class="mb-0 ps-3">
+            <% section.section_plays.each do |sp| %>
+              <li><%= link_to sp.play.name, play_path(sp.play), class: "text-decoration-none" %></li>
+            <% end %>
+          </ol>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+</div>

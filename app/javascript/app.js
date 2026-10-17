@@ -680,6 +680,120 @@
     window.addEventListener("pagehide", stopOutputPolling);
   }
 
+  // Конструктор плейбука: ветвления по ОС и упорядоченные плеи внутри ветвления.
+  // Все изменения — в полях формы (без AJAX): новое ветвление клонирует <template>,
+  // позиции перенумеровываются при каждом изменении, удаление сохранённых записей
+  // оставляет в форме только маркер _destroy (остальные поля блока убираются).
+  function initPlaybookBuilder() {
+    var container = document.getElementById("playbook-sections");
+    if (!container) return;
+
+    var template = document.getElementById("playbook-section-template");
+    var addBtn = document.getElementById("add-os-section-btn");
+
+    // Перенумеровать position-поля плеев ветвления (0..n-1, в порядке DOM).
+    function renumber(sectionEl) {
+      sectionEl.querySelectorAll(".section-plays .play-row").forEach(function (row, i) {
+        var pos = row.querySelector('input[name$="[position]"]');
+        if (pos) { pos.value = String(i); }
+      });
+    }
+
+    // Удалить ветвление/строку плея: для сохранённых записей в форме остаётся
+    // только маркер _destroy=1, видимая часть блока скрывается.
+    function destroyBlock(el, markerSelector) {
+      var marker = el.querySelector(markerSelector);
+      if (!marker) { el.remove(); return; }
+      marker.value = "1";
+      Array.prototype.slice.call(el.children).forEach(function (child) {
+        if (child !== marker) { child.remove(); }
+      });
+      el.style.display = "none";
+    }
+
+    function makeBtn(cls, icon, title) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "btn btn-sm " + cls;
+      b.title = title;
+      b.innerHTML = '<i class="bi ' + icon + '"></i>';
+      return b;
+    }
+
+    // Строка плея в ветвлении (добавляется из выпадающего списка).
+    function addPlayRow(select, optionText) {
+      var sectionEl = select.closest(".playbook-section");
+      var prefix = select.getAttribute("data-name-prefix") + "[section_plays_attributes][]";
+      var row = document.createElement("div");
+      row.className = "d-flex align-items-center gap-2 mb-1 play-row";
+
+      var badge = document.createElement("span");
+      badge.className = "badge bg-secondary text-break";
+      badge.textContent = optionText;
+
+      var idInput = document.createElement("input");
+      idInput.type = "hidden";
+      idInput.name = prefix + "[play_id]";
+      idInput.value = select.value;
+
+      var posInput = document.createElement("input");
+      posInput.type = "hidden";
+      posInput.name = prefix + "[position]";
+      posInput.value = "0"; // renumber() сразу поправит
+
+      row.appendChild(badge);
+      row.appendChild(idInput);
+      row.appendChild(posInput);
+      row.appendChild(makeBtn("btn-outline-secondary", "bi-arrow-up", "Выше"));
+      row.appendChild(makeBtn("btn-outline-secondary", "bi-arrow-down", "Ниже"));
+      row.appendChild(makeBtn("btn-outline-danger", "bi-x-lg", "Убрать плей"));
+
+      sectionEl.querySelector(".section-plays").appendChild(row);
+      select.value = "";
+      renumber(sectionEl);
+    }
+
+    // Кнопки внутри ветвлений (делегирование: новые блоки появляются динамически).
+    container.addEventListener("click", function (e) {
+      var btn = e.target.closest ? e.target.closest("button") : null;
+      if (!btn || !container.contains(btn)) return;
+
+      if (btn.classList.contains("section-remove-btn")) {
+        destroyBlock(btn.closest(".playbook-section"), "[data-section-destroy]");
+      } else if (btn.classList.contains("play-remove-btn")) {
+        var row = btn.closest(".play-row");
+        destroyBlock(row, "[data-play-destroy]");
+        renumber(row.parentElement);
+      } else if (btn.classList.contains("play-move-up") || btn.classList.contains("play-move-down")) {
+        var r = btn.closest(".play-row");
+        var parent = r.parentElement;
+        var up = btn.classList.contains("play-move-up");
+        var sib = up ? r.previousElementSibling : r.nextElementSibling;
+        if (!sib) return;
+        if (up) { parent.insertBefore(r, sib); } else { parent.insertBefore(sib, r); }
+        renumber(parent);
+      }
+    });
+
+    // Выпадающий список «+ Добавить плей…» в ветвлении.
+    container.addEventListener("change", function (e) {
+      var select = e.target.closest ? e.target.closest(".add-play-select") : null;
+      if (!select || !select.value) return;
+      addPlayRow(select, select.options[select.selectedIndex].text);
+    });
+
+    // Кнопка «Добавить ветвление по ОС» — клонирует пустой шаблон.
+    if (addBtn && template) {
+      addBtn.addEventListener("click", function () {
+        container.appendChild(document.importNode(template.content, true));
+        renumber(container.lastElementChild);
+      });
+    }
+
+    // Начальная нумерация позиций для серверно-отрендеренных ветвлений.
+    container.querySelectorAll(".playbook-section").forEach(renumber);
+  }
+
   function init() {
     initTheme();
     initSidebar();
@@ -690,6 +804,7 @@
     bindEditVariables();
     bindRunForm();
     bindRunOutputPage();
+    initPlaybookBuilder();
   }
   onTurboLoad(init);
   window.WebAnsible = { openForm: openForm, showModal: showModal };

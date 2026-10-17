@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_10_17_000000) do
+ActiveRecord::Schema[7.0].define(version: 2026_10_17_120000) do
   create_table "common_variables", force: :cascade do |t|
     t.string "name", null: false
     t.text "value"
@@ -52,6 +52,31 @@ ActiveRecord::Schema[7.0].define(version: 2026_10_17_000000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "source", default: "manual", null: false
+  end
+
+  create_table "playbook_section_plays", force: :cascade do |t|
+    t.integer "playbook_section_id", null: false
+    t.integer "play_id", null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["play_id"], name: "index_playbook_section_plays_on_play_id"
+    t.index ["playbook_section_id"], name: "index_playbook_section_plays_on_playbook_section_id"
+  end
+
+  create_table "playbook_sections", force: :cascade do |t|
+    t.integer "playbook_id", null: false
+    t.string "os_type", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["playbook_id"], name: "index_playbook_sections_on_playbook_id"
+  end
+
+  create_table "playbooks", force: :cascade do |t|
+    t.string "name", null: false
+    t.text "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "plays", force: :cascade do |t|
@@ -120,4 +145,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_10_17_000000) do
 
   add_foreign_key "files", "organizations"
   add_foreign_key "hosts", "organizations"
+  add_foreign_key "playbook_section_plays", "playbook_sections"
+  add_foreign_key "playbook_section_plays", "plays"
+  add_foreign_key "playbook_sections", "playbooks"
 end

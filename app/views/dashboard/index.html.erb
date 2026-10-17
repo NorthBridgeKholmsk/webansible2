@@ -30,6 +30,14 @@
   <div class="col-md-2">
     <div class="card border-0 shadow-sm">
       <div class="card-body text-center">
+        <div class="display-6 text-primary"><%= @playbook_count %></div>
+        <div class="text-muted small">Плейбуков</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body text-center">
         <div class="display-6 text-primary"><%= @file_count %></div>
         <div class="text-muted small">Файлов</div>
       </div>
@@ -61,6 +69,7 @@
       <%= link_to "Хост", new_host_path, class: "btn btn-outline-primary" %>
       <%= link_to "Файл", new_file_path, class: "btn btn-outline-primary" %>
       <%= link_to "Плей", new_play_path, class: "btn btn-outline-primary" %>
+      <%= link_to "Плейбук", new_playbook_path, class: "btn btn-outline-primary" %>
       <%= link_to "Запуск", run_path, class: "btn btn-success" %>
       <%= button_tag type: "button", id: "zabbix-sync-btn", class: "btn btn-outline-success", data: { turbo: "false" } do %>
         <i class="bi bi-arrow-repeat"></i> Синхронизация с Zabbix

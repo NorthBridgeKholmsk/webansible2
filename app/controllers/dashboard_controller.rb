@@ -5,6 +5,7 @@ class DashboardController < ApplicationController
     @organization_count = Organization.count
     @host_count = Host.count
     @play_count = Play.count
+    @playbook_count = Playbook.count
     @file_count = FileEntry.count
     @variables_count = Variable.count
     content_for(:page_title) { "Главная" }

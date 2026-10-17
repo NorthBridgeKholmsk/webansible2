@@ -1,0 +1,48 @@
+<%# Блок ветвления по ОС в форме плейбука.
+    name_prefix — префикс имён полей: "playbook[sections_attributes][ID]" для сохранённых
+    секций, "playbook[sections_attributes][]" для новых (шаблон для JS и повторный рендер). %>
+<div class="card mb-3 playbook-section">
+  <% if section.persisted? %>
+    <input type="hidden" name="<%= name_prefix %>[_destroy]" value="0" data-section-destroy>
+  <% end %>
+  <div class="card-header bg-white d-flex align-items-center gap-2 py-2">
+    <span class="fw-bold me-auto"><i class="bi bi-hdd-stack me-1"></i>Ветвление по ОС</span>
+    <select name="<%= name_prefix %>[os_type]" class="form-select form-select-sm" style="width: auto;">
+      <% unless section.persisted? %>
+        <option value="">— выберите ОС —</option>
+      <% end %>
+      <%= options_for_select(host_option_select_options("os_type"), section.os_type) %>
+    </select>
+    <button type="button" class="btn btn-sm btn-outline-danger section-remove-btn" title="Удалить ветвление">
+      <i class="bi bi-trash"></i>
+    </button>
+  </div>
+  <div class="card-body py-2">
+    <div class="section-plays mb-2">
+      <% section.section_plays.each do |sp| %>
+        <% sp_name = sp.persisted? ? "[#{sp.id}]" : "[]" %>
+        <div class="d-flex align-items-center gap-2 mb-1 play-row">
+          <span class="badge bg-secondary text-break"><%= sp.play&.name %></span>
+          <input type="hidden" name="<%= name_prefix %>[section_plays_attributes]<%= sp_name %>[play_id]" value="<%= sp.play_id %>">
+          <input type="hidden" name="<%= name_prefix %>[section_plays_attributes]<%= sp_name %>[position]" value="<%= sp.position %>">
+          <% if sp.persisted? %>
+            <input type="hidden" name="<%= name_prefix %>[section_plays_attributes]<%= sp_name %>(_destroy)" value="0" data-play-destroy>
+          <% end %>
+          <button type="button" class="btn btn-sm btn-outline-secondary play-move-up" title="Выше"><i class="bi bi-arrow-up"></i></button>
+          <button type="button" class="btn btn-sm btn-outline-secondary play-move-down" title="Ниже"><i class="bi bi-arrow-down"></i></button>
+          <button type="button" class="btn btn-sm btn-outline-danger play-remove-btn" title="Убрать плей"><i class="bi bi-x-lg"></i></button>
+        </div>
+      <% end %>
+    </div>
+    <select class="form-select form-select-sm add-play-select" data-name-prefix="<%= name_prefix %>" style="max-width: 420px;">
+      <option value="">+ Добавить плей…</option>
+      <% Play.order(:os_type, :name).group_by(&:os_type).each do |os, plays| %>
+        <optgroup label="<%= os %>">
+          <% plays.each do |play| %>
+            <option value="<%= play.id %>"><%= play.name %></option>
+          <% end %>
+        </optgroup>
+      <% end %>
+    </select>
+  </div>
+</div>

@@ -21,6 +21,8 @@ Rails.application.routes.draw do
   patch "common-variables", to: "common_variables#update"
 
   resources :plays, only: [:index, :show, :new, :create, :edit, :update, :destroy]
+  # Плейбуки — конструктор из плеев с ветвлением по ОС (см. PlaybooksController).
+  resources :playbooks, only: [:index, :show, :new, :create, :edit, :update, :destroy]
   resources :files, only: [:index, :show, :new, :create, :edit, :update, :destroy]
 
   resources :users, only: [:index, :new, :create, :edit, :update, :destroy]
